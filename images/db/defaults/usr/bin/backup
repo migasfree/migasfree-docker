@@ -1,0 +1,24 @@
+#!/bin/bash
+_PATH=/var/migasfree/dump
+mkdir -p $_PATH
+
+if [ -f /etc/migasfree-server/settings.py ] ; then
+    cd /etc/migasfree-server
+    POSTGRES_HOST=$(python -c "import settings;print settings.DATABASES['default']['HOST']")
+    POSTGRES_PORT=$(python -c "import settings;print settings.DATABASES['default']['PORT']") 
+    POSTGRES_DB=$(python -c "import settings;print settings.DATABASES['default']['NAME']") 
+    POSTGRES_USER=$(python -c "import settings;print settings.DATABASES['default']['USER']") 
+    POSTGRES_PASSWORD=$(python -c "import settings;print settings.DATABASES['default']['PASSWORD']") 
+else
+    POSTGRES_HOST=127.0.0.1
+    POSTGRES_PORT=5432
+    POSTGRES_DB=migasfree
+    POSTGRES_USER=migasfree
+    POSTGRES_PASSWORD=migasfree
+fi
+
+export PGPASSWORD=$POSTGRES_PASSWORD
+echo "$(date -u) DUMP Database: $POSTGRES_DB ..."   >> $_PATH/backup.log 2>&1
+pg_dump $POSTGRES_DB -U $POSTGRES_USER > /var/migasfree/dump/migasfree.sql
+echo "$(date -u) DUMP done"  >> $_PATH/backup.log 2>&1
+echo ""  >> /var/log/backup.log 2>&1
