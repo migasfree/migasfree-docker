@@ -9,9 +9,9 @@ server:
   ports:
     - "80:80"
   volumes:
-    - "/var/mf/${FQDN}/conf:/etc/migasfree-server"
-    - "/var/mf/${FQDN}/repo:/var/migasfree/repo"
-    - "/var/mf/${FQDN}/server:/usr/share/migasfree-server"
+    - "/var/lib/migasfree/${FQDN}/conf:/etc/migasfree-server"
+    - "/var/lib/migasfree/${FQDN}/public:/var/migasfree/repo"
+    - "/var/lib/migasfree/${FQDN}/keys:/usr/share/migasfree-server"
     
 db:
   image: migasfree/db:0.1
@@ -25,7 +25,7 @@ db:
     - POSTGRES_PASSWORD=migasfree
   restart: always
   volumes:
-    - "/var/mf/${FQDN}/conf:/etc/migasfree-server"
-    - "/var/mf/${FQDN}/data:/var/lib/postgresql/data"
-    - "/var/mf/${FQDN}/dump:/var/migasfree/dump"
+    - "/var/lib/migasfree/${FQDN}/conf:/etc/migasfree-server"
+    - "/var/lib/migasfree/${FQDN}/data:/var/lib/postgresql/data"
+    - "/var/lib/migasfree/${FQDN}/dump:/var/migasfree/dump"
 
