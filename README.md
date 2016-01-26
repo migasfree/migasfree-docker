@@ -1,18 +1,18 @@
 
 # Migasfree Docker
 
-Provides an isolated migasfree server to run in **one host**. 
+Provides an isolated migasfree server to run in **one host**.
 
 
 ## Requirements
 
-* ***A FQDN for your server***: If you don't have a FQDN you can add a register in /etc/hosts in order to emulate it in a test environment, or you can use the server ip too.
+* ***A FQDN for your server***: If you don't have a FQDN you can add a register in /etc/hosts in order to emulate it in a test environment, or you can use the IP server too.
 
-* ***docker engine installed***: https://docs.docker.com/engine/installation/ 
+* ***docker engine installed***: https://docs.docker.com/engine/installation/
 
 * ***docker-compose installed***: https://docs.docker.com/compose/install/
 
-* ***haveged installed***: Migasfree server needs a certain entropy in the host to generate gpg keys. If your host is based in debian run:
+* ***haveged installed***: Migasfree server needs a certain entropy in the host to generate gpg keys. If your host is based in Debian run:
 
 ```sh
        apt-get install haveged
@@ -35,15 +35,15 @@ In the **mf directory** run:
 FQDN=migasfree.mydomain.com docker-compose up -d
 ```
 
-***overwrite 'migasfree.mydomain.com' with your FQDN or server IP***
+***overwrite 'migasfree.mydomain.com' with your FQDN or IP server***
 
 
 ## Test it!
 
-Open any browser and enter the website, e.g.: 
+Open any browser and enter the website, e.g.:
 
 ```sh
-firefox http://migasfree.mydomain.com
+xdg-open http://migasfree.mydomain.com
 ```
 
 
