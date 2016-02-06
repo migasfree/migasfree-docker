@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 function owner {
     _OWNER=$(stat -c %U "$1" 2>/dev/null)
@@ -85,7 +85,7 @@ try:
         exit
 except:
     pass
-print "1"                 
+print "1"
 EOF
 )
 
@@ -96,7 +96,7 @@ if [ "$_CHECK_DB" = "1" ] ; then # if DataBase not exists
     # CREATE BD POSTGRESQL
     PGPASSWORD=$POSTGRES_PASSWORD createdb -U postgres -h $POSTGRES_HOST -p $POSTGRES_PORT -w -E utf8 -O $POSTGRES_USER $POSTGRES_DB || :
 
-     django-admin.py migrate 
+     django-admin.py migrate
 
     python - << EOF
 import django
@@ -106,24 +106,24 @@ from migasfree.server.fixtures import (
     sequence_reset,
 )
 create_registers()
-sequence_reset()    
+sequence_reset()
 EOF
 
 
 else
 
-    cat <(echo "yes") - | django-admin.py migrate --fake-initial
+    echo yes| cat -| django-admin.py migrate --fake-initial
 fi
 
 
 django-admin.py collectstatic --noinput
 
 
-# Create neccesary keys 
+# Create neccesary keys
     python - << EOF
 import django
 django.setup()
-from migasfree.server.security import create_keys_server 
+from migasfree.server.security import create_keys_server
 create_keys_server()
 EOF
 
@@ -148,19 +148,19 @@ server {
     client_max_body_size 500M;
 
     location /static/ {
-        alias %(static_root)s/; 
+        alias %(static_root)s/;
     }
-    
+
     location /repo/ {
         alias %(repo)s/;
         autoindex on;
     }
-    
+
     location /repo/errors/ {
         deny all;
         return 404;
     }
-    
+
     location / {
         proxy_pass http://localhost:8080/;
         proxy_pass_header Server;
@@ -180,7 +180,7 @@ target.write(_CONFIG_NGINX)
 target.close()
 EOF
 
-ln -s  /etc/nginx/sites-available/migasfree.conf  /etc/nginx/sites-enabled/migasfree.conf || : 
+ln -s  /etc/nginx/sites-available/migasfree.conf  /etc/nginx/sites-enabled/migasfree.conf || :
 
 /etc/init.d/nginx restart
 
