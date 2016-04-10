@@ -1,166 +1,60 @@
 #!/bin/bash
 
-function owner {
-    _OWNER=$(stat -c %U "$1" 2>/dev/null)
-    if [ $? = 1 ] ; then
+
+function set_TZ {
+    if [ -z "$TZ" ]; then
+      TZ="Europe/Madrid"
+    fi
+    # /etc/timezone for TZ setting
+    ln -fs /usr/share/zoneinfo/$TZ /etc/localtime || :
+}
+
+
+function get_migasfree_setting()
+{
+    echo -n $(DJANGO_SETTINGS_MODULE=migasfree.settings.production python -c "from django.conf import settings; print settings.$1")
+}
+
+
+# owner resource user
+function owner()
+{
+    if [ ! -f "$1" -a ! -d "$1" ]
+    then
         mkdir -p "$1"
     fi
-    if ! [ "$_OWNER" = "www-data" ] ; then
-        echo "CHOWN -R $1"
-        chown -R www-data:www-data "$1"
+
+    _OWNER=$(stat -c %U "$1" 2>/dev/null)
+    if [ "$_OWNER" != "$2" ]
+    then
+        chown -R $2:$2 "$1"
     fi
 }
 
 
-/etc/init.d/haveged start || :
-
-
-# Waiting to the database
-DB_IP=$(env|grep ${FQDN^^}_DB_PORT_5432_TCP_ADDR|awk -F "=" '{print $2}')
-while ! exec 6<>/dev/tcp/${DB_IP}/5432; do
-    echo "$(date) - waiting connect to the ${DB_IP}:5432"
-    sleep 1
-done
-
-
-POSTGRES_HOST=$(python - << EOF
-from django.conf import settings
-print settings.DATABASES['default']['HOST']
-EOF
-)
-
-POSTGRES_PORT=$(python - << EOF
-from django.conf import settings
-print settings.DATABASES['default']['PORT']
-EOF
-)
-
-POSTGRES_DB=$(python - << EOF
-from django.conf import settings
-print settings.DATABASES['default']['NAME']
-EOF
-)
-
-POSTGRES_USER=$(python - << EOF
-from django.conf import settings
-print settings.DATABASES['default']['USER']
-EOF
-)
-
-POSTGRES_PASSWORD=$(python - << EOF
-from django.conf import settings
-print settings.DATABASES['default']['PASSWORD']
-EOF
-)
-
-_STATIC_ROOT=$(python - << EOF
-from django.conf import settings
-print settings.STATIC_ROOT
-EOF
-)
-
-_MIGASFREE_REPO_DIR=$(python - << EOF
-from django.conf import settings
-print settings.MIGASFREE_REPO_DIR
-EOF
-)
-
-_MIGASFREE_PROJECT_DIR=$(python - << EOF
-from django.conf import settings
-print settings.MIGASFREE_PROJECT_DIR
-EOF
-)
-
-_MIGASFREE_KEYS_DIR=$(python - << EOF
-from django.conf import settings
-print settings.MIGASFREE_KEYS_DIR
-EOF
-)
-
-_CHECK_DB=$(python - << EOF
-from django.db import connection
-try:
-    if connection.introspection.table_names():
-        print "0"
-        exit
-except:
-    pass
-print "1"
-EOF
-)
-
-
-if [ "$_CHECK_DB" = "1" ] ; then # if DataBase not exists
-    # CREATE USER POSTGRESQL
-    psql -U postgres -h $POSTGRES_HOST -p $POSTGRES_PORT -c "CREATE USER $POSTGRES_USER WITH CREATEDB NOCREATEUSER ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';" || :
-    # CREATE BD POSTGRESQL
-    PGPASSWORD=$POSTGRES_PASSWORD createdb -U postgres -h $POSTGRES_HOST -p $POSTGRES_PORT -w -E utf8 -O $POSTGRES_USER $POSTGRES_DB || :
-
-     django-admin.py migrate
-
-    python - << EOF
-import django
-django.setup()
-from migasfree.server.fixtures import (
-    create_registers,
-    sequence_reset,
-)
-create_registers()
-sequence_reset()
-EOF
-
-
-else
-
-    echo yes| cat -| django-admin.py migrate --fake-initial
-fi
-
-
-django-admin.py collectstatic --noinput
-
-
-# Create neccesary keys
-    python - << EOF
-import django
-django.setup()
-from migasfree.server.security import create_keys_server
-create_keys_server()
-EOF
-
-
-#owner $_MIGASFREE_PROJECT_DIR
-owner $_MIGASFREE_KEYS_DIR
-#owner $_STATIC_ROOT
-owner $_MIGASFREE_REPO_DIR
-owner $_MIGASFREE_REPO_DIR/errors
-
-touch /tmp/migasfree.log
-owner /tmp/migasfree.log
-
 # Nginx configuration
+function create_nginx_config
+{
     python - << EOF
 from django.conf import settings
-
 _CONFIG_NGINX = """
+
 server {
-    listen 80 ;
-    server_name $FQDN ;
+    listen 80;
+    server_name $FQDN $HOST localhost 127.0.0.1;
     client_max_body_size 500M;
 
     location /static/ {
         alias %(static_root)s/;
     }
-
     location /repo/ {
         alias %(repo)s/;
         autoindex on;
     }
-
     location /repo/errors/ {
         deny all;
         return 404;
     }
-
     location / {
         proxy_pass http://localhost:8080/;
         proxy_pass_header Server;
@@ -168,20 +62,166 @@ server {
         proxy_redirect off;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Scheme \$scheme;
-        proxy_connect_timeout 600;
+        proxy_set_header REMOTE_ADDR \$remote_addr;
+        proxy_connect_timeout 10;
         proxy_send_timeout 600;
         proxy_read_timeout 600;
     }
-
 }
 """ % {'static_root': settings.STATIC_ROOT, 'repo': settings.MIGASFREE_REPO_DIR}
 target = open('/etc/nginx/sites-available//migasfree.conf', 'w')
 target.write(_CONFIG_NGINX)
 target.close()
 EOF
+ln -sf  /etc/nginx/sites-available/migasfree.conf  /etc/nginx/sites-enabled/migasfree.conf
+}
 
-ln -s  /etc/nginx/sites-available/migasfree.conf  /etc/nginx/sites-enabled/migasfree.conf || :
+function set_nginx_server_permissions()
+{
+    _USER=www-data
+    # owner for repositories
+    _REPO_PATH=$(get_migasfree_setting MIGASFREE_REPO_DIR)
+    owner $_REPO_PATH $_USER
+    # owner for keys
+    _KEYS_PATH=$(get_migasfree_setting MIGASFREE_KEYS_DIR)
+    owner $_KEYS_PATH $_USER
+    chmod 700 $_KEYS_PATH
+    # owner for migasfree.log
+    _TMP_DIR=$(get_migasfree_setting MIGASFREE_TMP_DIR)
+    touch "$_TMP_DIR/migasfree.log"
+    owner "$_TMP_DIR/migasfree.log" $_USER
+}
 
-/etc/init.d/nginx restart
 
-circusd /etc/circus/circusd.ini
+
+function nginx_init
+{
+
+    create_nginx_config
+
+    python -c "import django; django.setup(); from migasfree.server.security import create_keys_server; create_keys_server()"
+
+    /etc/init.d/nginx start
+    set_nginx_server_permissions
+}
+
+
+function is_db_exists()
+{
+
+    _HOST=$(get_migasfree_setting "DATABASES['default']['HOST']")
+    _PORT=$(get_migasfree_setting "DATABASES['default']['PORT']")
+    _USER=$(get_migasfree_setting "DATABASES['default']['USER']")
+    _NAME=$(get_migasfree_setting "DATABASES['default']['NAME']")
+
+    psql -h $_HOST -p $_PORT -U $_USER -tAc "SELECT 1 from pg_database WHERE datname='$_NAME'" 2>/dev/null | grep -q 1
+    test $? -eq 0
+}
+
+
+function is_user_exists()
+{
+    _HOST=$(get_migasfree_setting "DATABASES['default']['HOST']")
+    _PORT=$(get_migasfree_setting "DATABASES['default']['PORT']")
+    _USER=$(get_migasfree_setting "DATABASES['default']['USER']")
+    _CMD="psql postgres -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$_USER';\""
+    psql -h $_HOST -p $_PORT -U postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$_USER';" | grep -q 1
+    test $? -eq 0
+}
+
+
+function create_user()
+{
+    _HOST=$(get_migasfree_setting "DATABASES['default']['HOST']")
+    _PORT=$(get_migasfree_setting "DATABASES['default']['PORT']")
+    _USER=$(get_migasfree_setting "DATABASES['default']['USER']")
+    _PASSWORD=$(get_migasfree_setting "DATABASES['default']['PASSWORD']")
+    psql -h $_HOST -p $_PORT -U postgres -tAc "CREATE USER $_USER WITH CREATEDB NOCREATEUSER ENCRYPTED PASSWORD '$_PASSWORD';"
+    test $? -eq 0
+}
+
+function create_database()
+{
+    _HOST=$(get_migasfree_setting "DATABASES['default']['HOST']")
+    _PORT=$(get_migasfree_setting "DATABASES['default']['PORT']")
+    _NAME=$(get_migasfree_setting "DATABASES['default']['NAME']")
+    _USER=$(get_migasfree_setting "DATABASES['default']['USER']")
+    psql -h $_HOST -p $_PORT -U postgres -tAc "CREATE DATABASE $_NAME WITH OWNER = $_USER ENCODING='UTF8';"
+    test $? -eq 0
+}
+
+
+function set_circus_numprocesses() {
+    sed -ri "s/^#?(numprocesses\s*=\s*)\S+/\1$(nproc)/" "/etc/circus/circusd.ini"
+}
+
+
+function wait_postgresql {
+    while [ -f  /etc/migasfree-server/.init-db ] ; do
+      # echo "$(date) - waiting for $FQDN:$POSTGRES_PORT ..."
+      sleep 1
+    done
+}
+
+
+function migasfree_init
+{
+
+    wait_postgresql
+
+    is_user_exists || create_user
+
+    is_db_exists && echo yes | cat - | django-admin.py migrate --fake-initial || (
+        create_database
+        django-admin.py migrate
+        python - << EOF
+import django
+django.setup()
+from migasfree.server.fixtures import create_registers, sequence_reset
+create_registers()
+sequence_reset()
+EOF
+    )
+
+    nginx_init
+
+}
+
+
+set_TZ
+migasfree_init
+
+
+echo "Starting circus"
+set_circus_numprocesses
+circusd --daemon /etc/circus/circusd.ini
+circusctl status
+
+echo "One moment..."
+
+
+STATUS=$(LANGUAGE=C wget 127.0.0.1/admin/login/ 2>&1 | egrep "HTTP" |awk '{print $6}')
+if [ $STATUS = 200 ] ; then
+    rm -f index.html &>/dev/null
+    echo ""
+    echo "        Time zome: $TZ  $(date)"
+    echo "        Processes: $(nproc)"
+    echo ''
+    echo '               -------O--      '
+    echo '              \         o \    '
+    echo '               \           \   '
+    echo '                \           \  '
+    echo '                  -----------  '
+    echo ''
+    echo "        http://$FQDN:$PORT is running."
+    echo ''
+    echo ''
+else
+    echo "        Sorry http://$FQDN:$PORT is not operative :("
+    exit 1
+fi
+
+while :
+do
+    sleep 5
+done
