@@ -1,0 +1,14 @@
+#export FQDN=migasfree.mydomain.com
+export FQDN=192.168.92.100
+
+export TZ=Europe/Madrid
+
+export MIGASFREE_PORT=80
+
+export POSTGRES_PORT=5432
+export POSTGRES_DB=migasfree
+export POSTGRES_USER=migasfree
+export POSTGRES_PASSWORD=migasfree
+export POSTGRES_ALLOW_HOSTS="192.168.92.0/24"
+
+export POSTGRES_CRON="00 00 * * *"
