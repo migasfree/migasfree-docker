@@ -1,42 +1,42 @@
 #!/bin/bash
 
 _PATH=/var/migasfree/dump
-mkdir -p $_PATH
 
-read -p "Are you sure [y/N]? " -n 1 -r
+DUMP_FILE="$1"
+
+if [ -z $DUMP_FILE ]
+then
+    DUMP_FILE=migasfree.sql
+fi
+
+echo "Restore '$DUMP_FILE' dump. "
+ls  -la $_PATH/$DUMP_FILE
+
+read -p "Are you sure [y/N]? " 
 echo 
+
 if [[ $REPLY =~ ^[Yy]$ ]] ; then
 
-	ps aux|grep pg_dump > /dev/null
-	if [ $? = 1 ] ; then
-	   echo "error: pg_dump is running!"
-	   exit 1
-	fi
+    ps aux|grep pg_dump > /dev/null
+    if [ $? = 1 ] ; then
+       echo "error: pg_dump is running!"
+       exit 1
+    fi
 
-	if [ -f /etc/migasfree-server/settings.py ] ; then
-		cd /etc/migasfree-server
-		POSTGRES_DB=$(python -c "import settings;print settings.DATABASES['default']['NAME']") 
-		POSTGRES_USER=$(python -c "import settings;print settings.DATABASES['default']['USER']") 
-		POSTGRES_PASSWORD=$(python -c "import settings;print settings.DATABASES['default']['PASSWORD']") 
-	else
-		POSTGRES_DB=migasfree
-		POSTGRES_USER=migasfree
-		POSTGRES_PASSWORD=migasfree
-	fi
-
-	echo "127.0.0.1:5432:$POSTGRES_DB:$POSTGRES_USER:$POSTGRES_PASSWORD" > ~/.pgpass
-	chmod 0600 ~/.pgpass
+    echo "127.0.0.1:$POSTGRES_PORT:$POSTGRES_DB:$POSTGRES_USER:$POSTGRES_PASSWORD" > ~/.pgpass
+    chmod 0600 ~/.pgpass
 
     echo "$(date -u) Drop Database: $POSTGRES_DB ..."   >> $_PATH/restore.log 2>&1
-	echo "DROP DATABASE $POSTGRES_DB;" | su postgres -c psql -
+    echo "DROP DATABASE $POSTGRES_DB;" | su postgres -c psql -
 
-	echo "$(date -u) Create BD ..." >> $_PATH/restore.log 2>&1
-	su postgres -c "createdb --no-password -E utf8 $POSTGRES_DB" 
+    echo "$(date -u) Create BD ..." >> $_PATH/restore.log 2>&1
+    su postgres -c "createdb --no-password -E utf8 $POSTGRES_DB" 
 
-	echo "$(date -u) Restore BD ..." >> $_PATH/restore.log 2>&1
-	su postgres -c "psql --no-password -U $POSTGRES_USER -f /var/migasfree/dump/migasfree.sql" -
+    echo "$(date -u) Restore BD ..." >> $_PATH/restore.log 2>&1
+    su postgres -c "psql --no-password -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -f $_PATH/$DUMP_FILE" -
 
-	echo "$(date -u) Done." >> $_PATH/restore.log 2>&1
+
+    echo "$(date -u) Done." >> $_PATH/restore.log 2>&1
     echo "" >> $_PATH/restore.log 2>&1
        
 fi
