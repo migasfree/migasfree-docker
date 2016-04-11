@@ -12,8 +12,8 @@ fi
 echo "Restore '$DUMP_FILE' dump. "
 ls  -la $_PATH/$DUMP_FILE
 
-read -p "Are you sure [y/N]? " 
-echo 
+read -p "Are you sure [y/N]? "
+echo
 
 if [[ $REPLY =~ ^[Yy]$ ]] ; then
 
@@ -23,20 +23,20 @@ if [[ $REPLY =~ ^[Yy]$ ]] ; then
        exit 1
     fi
 
-    echo "127.0.0.1:$POSTGRES_PORT:$POSTGRES_DB:$POSTGRES_USER:$POSTGRES_PASSWORD" > ~/.pgpass
+    echo "localhost:$POSTGRES_PORT:$POSTGRES_DB:$POSTGRES_USER:$POSTGRES_PASSWORD" > ~/.pgpass
     chmod 0600 ~/.pgpass
 
     echo "$(date -u) Drop Database: $POSTGRES_DB ..."   >> $_PATH/restore.log 2>&1
     echo "DROP DATABASE $POSTGRES_DB;" | su postgres -c psql -
 
     echo "$(date -u) Create BD ..." >> $_PATH/restore.log 2>&1
-    su postgres -c "createdb --no-password -E utf8 $POSTGRES_DB" 
+    su postgres -c "createdb --no-password -E utf8 $POSTGRES_DB"
 
     echo "$(date -u) Restore BD ..." >> $_PATH/restore.log 2>&1
-    su postgres -c "psql --no-password -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -f $_PATH/$DUMP_FILE" -
+    su postgres -c "psql --no-password -h localhost -p $POSTGRES_PORT -U $POSTGRES_USER -f $_PATH/$DUMP_FILE" -
 
 
     echo "$(date -u) Done." >> $_PATH/restore.log 2>&1
     echo "" >> $_PATH/restore.log 2>&1
-       
+
 fi
