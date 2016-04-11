@@ -15,7 +15,7 @@ function cron_init
         POSTGRES_CRON="0 0 * * *"
     fi
     CRON=$(echo "$POSTGRES_CRON" |tr -d "'") # remove single quote
-    echo "$CRON /usr/bin/backup-db" > /tmp/cron
+    echo "$CRON /usr/bin/backup" > /tmp/cron
     crontab /tmp/cron
     rm /tmp/cron
     service cron start
