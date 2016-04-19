@@ -158,16 +158,26 @@ function set_circus_numprocesses() {
 
 function wait_postgresql {
     while [ -f  /etc/migasfree-server/.init-db ] ; do
-      # echo "$(date) - waiting for $FQDN:$POSTGRES_PORT ..."
       sleep 1
     done
 }
+
+
+function wait_server {
+    while [ -f  /etc/migasfree-server/.init-server ] ; do
+      sleep 1
+    done
+    touch /etc/migasfree-server/.init-server
+}
+
 
 
 function migasfree_init
 {
 
     wait_postgresql
+
+    wait_server
 
     is_user_exists || create_user
 
@@ -183,7 +193,10 @@ sequence_reset()
 EOF
     )
 
+
     nginx_init
+
+    rm /etc/migasfree-server/.init-server
 
 }
 
