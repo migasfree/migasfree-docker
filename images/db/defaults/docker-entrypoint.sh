@@ -1,6 +1,17 @@
 #!/bin/bash
 set -e
 
+
+function save_environment {
+    _ENV_FILE=/etc/environment
+    echo "#!/bin/bash" > $_ENV_FILE
+    vars=$(printenv|awk -F '=' '{print $1}')
+    for var in $vars
+    do
+        echo  "export $var='$(printenv $var)'" >> $_ENV_FILE
+    done
+}
+
 function set_TZ {
     if [ -z "$TZ" ]; then
       TZ="Europe/Madrid"
@@ -161,7 +172,7 @@ POSTGRES_USER=$(python -c "import settings;print settings.DATABASES['default']['
 POSTGRES_PASSWORD=$(python -c "import settings;print settings.DATABASES['default']['PASSWORD']")
 
 
-
+save_environment
 set_TZ
 cron_init
 pg__data_init
