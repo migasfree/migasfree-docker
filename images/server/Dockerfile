@@ -11,8 +11,8 @@ ENV TERM=xterm \
     DJANGO_SETTINGS_MODULE=migasfree.settings.production \
     _UID=890 \
     _GID=890 \
-    _BUILD_DEPENDS='dpkg-dev python-dev libgpgme11-dev python-all debhelper unzip g++' \
-    _DEPENDS='gnupg rng-tools curl rpm createrepo apt-utils bzip2 xz-utils libpq-dev libzmq-dev libgpgme11 postgresql-client nginx python2.7 python-minimal python-pip p7zip-full vim wget netcat-openbsd' \
+    _BUILD_DEPENDS='python-dev libgpgme11-dev python-all debhelper unzip g++' \
+    _DEPENDS='dpkg-dev gnupg rng-tools curl rpm createrepo apt-utils bzip2 xz-utils libpq-dev libzmq-dev libgpgme11 postgresql-client nginx python2.7 python-minimal python-pip p7zip-full vim wget netcat-openbsd' \
     _PIP_DEPENDS='circus==0.13.0 chaussette==1.3.0  meinheld==0.5.9 pygpgme==0.3'
 
 RUN apt-get update && \
