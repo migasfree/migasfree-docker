@@ -29,21 +29,32 @@ Provides an isolated migasfree server to run in **one host**.
 
 ## Running a migasfree server
 
-In the **mf directory** run:
+First assign the environment variables:
 
 ```sh
-FQDN=migasfree.mydomain.com docker-compose up -d
+export FQDN=192.168.92.100
+export TZ=Europe/Madrid
+export MIGASFREE_PORT=80
+export POSTGRES_PORT=5432
+export POSTGRES_DB=migasfree
+export POSTGRES_USER=migasfree
+export POSTGRES_PASSWORD=migasfree
+export POSTGRES_ALLOW_HOSTS="192.168.92.0/24"
+export POSTGRES_CRON="00 00 * * *"
 ```
 
-***overwrite 'migasfree.mydomain.com' with your FQDN or IP server***
+and then, execute  in the **mf directory**:
 
+```sh
+docker-compose up -d
+```
 
 ## Test it!
 
 Open any browser and enter the website, e.g.:
 
 ```sh
-xdg-open http://migasfree.mydomain.com
+xdg-open http://192.168.92.100
 ```
 
 
@@ -54,7 +65,7 @@ Edit the file **/var/lib/migasfree/FQDN/conf/settings.py** and configure the mig
 
 ## Backup the Database
 
-Migasfree server makes a dump of the database every day at 00:00 UTC. Running this command will force the dump of the database in **/var/lib/migasfree/FQDN/dump/migasfree.sql** :
+Migasfree server makes a dump of the database at POSTGRES_CRON config variable, but running this command will force the dump of the database in **/var/lib/migasfree/FQDN/dump/migasfree.sql** :
 
 ```sh
 docker exec -ti migasfree.mydomain.com-db backup
