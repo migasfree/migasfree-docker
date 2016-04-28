@@ -18,49 +18,45 @@ Provides an isolated migasfree server to run in **one host**.
        apt-get install haveged
 ```
 
-* ***Download docker-compose.yml file***:
+
+## Install 
+
+* ***Download docker-compose.yml and variables file***:
 
 ```sh
-       mkdir mf
-       cd mf
-       wget https://github.com/migasfree/migasfree-docker/raw/master/mf/docker-compose.yml
+        mkdir mf
+        cd mf
+        wget https://github.com/migasfree/migasfree-docker/raw/master/mf/docker-compose.yml
+        wget https://github.com/migasfree/migasfree-docker/raw/master/mf/variables
+```
+
+* ***Configure***:
+
+```sh
+        vi variables
 ```
 
 
-## Running a migasfree server
-
-First assign the environment variables:
+## Run
 
 ```sh
-export FQDN=192.168.92.100
-export TZ=Europe/Madrid
-export MIGASFREE_PORT=80
-export POSTGRES_PORT=5432
-export POSTGRES_DB=migasfree
-export POSTGRES_USER=migasfree
-export POSTGRES_PASSWORD=migasfree
-export POSTGRES_ALLOW_HOSTS="192.168.92.0/24"
-export POSTGRES_CRON="00 00 * * *"
+        . variables
+        docker-compose up -d
 ```
 
-and then, execute  in the **mf directory**:
-
-```sh
-docker-compose up -d
-```
 
 ## Test it!
 
 Open any browser and enter the website, e.g.:
 
 ```sh
-xdg-open http://192.168.92.100
+xdg-open http://<FQDN>
 ```
 
 
-## Configure
+## Settings
 
-Edit the file **/var/lib/migasfree/FQDN/conf/settings.py** and configure the migasfree-server (http://fun-with-migasfree.readthedocs.org/en/master/part05.html#ajustes-del-servidor-migasfree).
+Edit the file **/var/lib/migasfree/FQDN/conf/settings.py** to customize the migasfree-server (http://fun-with-migasfree.readthedocs.org/en/master/part05.html#ajustes-del-servidor-migasfree).
 
 
 ## Backup the Database
