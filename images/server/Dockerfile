@@ -1,8 +1,7 @@
 FROM debian:jessie
 MAINTAINER Alberto Gacías <alberto@migasfree.org>
 
-#ENV _TAG=migasfree-server_4.10
-ENV _TAG=master
+COPY VERSION /VERSION
 
 ENV TERM=xterm \
     DEBIAN_FRONTEND=noninteractive \
@@ -15,7 +14,8 @@ ENV TERM=xterm \
     _DEPENDS='dpkg-dev gnupg rng-tools curl rpm createrepo apt-utils bzip2 xz-utils libpq-dev libzmq-dev libgpgme11 postgresql-client nginx python2.7 python-minimal python-pip p7zip-full vim wget netcat-openbsd' \
     _PIP_DEPENDS='circus==0.13.0 chaussette==1.3.0  meinheld==0.5.9 pygpgme==0.3'
 
-RUN apt-get update && \
+RUN _TAG=$(./VERSION tag) && \
+    apt-get update && \
     apt-get install -y --no-install-recommends locales ntp coreutils && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8  && \
     update-locale LANG=$LANG && \

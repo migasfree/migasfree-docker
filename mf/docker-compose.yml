@@ -1,5 +1,5 @@
 server:
-  image: migasfree/server:4.10-devel
+  image: migasfree/server:${MIGASFREE_VERSION}
   container_name: ${FQDN}-server
   environment:
     - FQDN=${FQDN}

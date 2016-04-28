@@ -1,14 +1,25 @@
-#export FQDN=migasfree.mydomain.com
-export FQDN=192.168.92.100
+#!/bin/bash
 
-export TZ=Europe/Madrid
+#export FQDN=migasfree.mydomain.com
+#export FQDN=192.168.92.100
+export FQDN=$(hostname -I|awk '{print $1}')
+
+#export MIGASFREE_VERSION=4.10
+#export MIGASFREE_VERSION=master
+#export MIGASFREE_VERSION=$(../images/server/VERSION)
+export MIGASFREE_VERSION=latest
 
 export MIGASFREE_PORT=80
 
 export POSTGRES_PORT=5432
+
 export POSTGRES_DB=migasfree
 export POSTGRES_USER=migasfree
 export POSTGRES_PASSWORD=migasfree
-export POSTGRES_ALLOW_HOSTS="192.168.92.0/24"
 
 export POSTGRES_CRON="00 00 * * *"
+
+#export POSTGRES_ALLOW_HOSTS="192.168.92.0/24"
+export POSTGRES_ALLOW_HOSTS=""
+
+export TZ=Europe/Madrid

@@ -2,11 +2,9 @@
 
 USER = migasfree
 REPO = server
-VERSION ?= 4.10-devel
-
+VERSION := $(shell ./VERSION)
 
 .PHONY: build push release
-
 
 build:
 	docker build -t $(USER)/$(REPO):$(VERSION) .
