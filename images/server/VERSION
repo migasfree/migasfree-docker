@@ -1,16 +1,1 @@
-#!/bin/bash
-
-#  master, 4.10, 4.11, ...
-_VERSION=master
-
-if [ "$_VERSION" = "master" -o "$_VERSION" = "latest" ] ; then
-  _TAG=$_VERSION
-else
-  _TAG="migasfree-server_$_VERSION"
-fi
-
-if [ "$1" = "tag" ] ; then
-  echo $_TAG
-else
-  echo $_VERSION
-fi
+latest

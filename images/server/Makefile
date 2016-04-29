@@ -2,7 +2,7 @@
 
 USER = migasfree
 REPO = server
-VERSION := $(shell ./VERSION)
+VERSION := $(shell cat ./VERSION)
 
 .PHONY: build push release
 

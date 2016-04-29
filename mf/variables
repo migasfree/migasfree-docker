@@ -6,7 +6,7 @@ export FQDN=$(hostname -I|awk '{print $1}')
 
 #export MIGASFREE_VERSION=4.10
 #export MIGASFREE_VERSION=master
-#export MIGASFREE_VERSION=$(../images/server/VERSION)
+#export MIGASFREE_VERSION=$(cat ../images/server/VERSION)
 export MIGASFREE_VERSION=latest
 
 export MIGASFREE_PORT=80
