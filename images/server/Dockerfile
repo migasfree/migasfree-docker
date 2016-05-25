@@ -34,7 +34,7 @@ RUN _TAG=$(cat /VERSION) && \
     # explicity set user/group IDs to www-data && \
     usermod -u $_UID www-data && \
     groupmod -g $_GID www-data && \
-    django-admin.py collectstatic --noinput && \
+    django-admin collectstatic --noinput && \
     apt-get -y --auto-remove purge $_BUILD_DEPENDS && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

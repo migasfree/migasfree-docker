@@ -181,9 +181,9 @@ function migasfree_init
 
     is_user_exists || create_user
 
-    is_db_exists && echo yes | cat - | django-admin.py migrate --fake-initial || (
+    is_db_exists && echo yes | cat - | django-admin migrate --fake-initial || (
         create_database
-        django-admin.py migrate
+        django-admin migrate
         python - << EOF
 import django
 django.setup()
