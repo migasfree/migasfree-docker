@@ -61,6 +61,7 @@ server {
         proxy_set_header Host \$host;
         proxy_redirect off;
         proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$remote_addr;
         proxy_set_header X-Scheme \$scheme;
         proxy_set_header REMOTE_ADDR \$remote_addr;
         proxy_connect_timeout 10;
