@@ -137,7 +137,7 @@ function create_user()
     _PORT=$(get_migasfree_setting "DATABASES['default']['PORT']")
     _USER=$(get_migasfree_setting "DATABASES['default']['USER']")
     _PASSWORD=$(get_migasfree_setting "DATABASES['default']['PASSWORD']")
-    psql -h $_HOST -p $_PORT -U postgres -tAc "CREATE USER $_USER WITH CREATEDB NOCREATEUSER ENCRYPTED PASSWORD '$_PASSWORD';"
+    psql -h $_HOST -p $_PORT -U postgres -tAc "CREATE USER $_USER WITH CREATEDB ENCRYPTED PASSWORD '$_PASSWORD';"
     test $? -eq 0
 }
 

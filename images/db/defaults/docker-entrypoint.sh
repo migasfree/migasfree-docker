@@ -80,7 +80,7 @@ function is_pg_user_exists()
 
 function pg_create_user()
 {
-    _CMD="psql postgres -tAc \"CREATE USER $POSTGRES_USER WITH CREATEDB NOCREATEUSER ENCRYPTED PASSWORD '$POSTGRESS_PASSWORD';\""
+    _CMD="psql postgres -tAc \"CREATE USER $POSTGRES_USER WITH CREATEDB ENCRYPTED PASSWORD '$POSTGRESS_PASSWORD';\""
     su postgres -l -c "$_CMD"
     test $? -eq 0
 }
