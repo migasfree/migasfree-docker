@@ -15,6 +15,7 @@ ENV TERM=xterm \
     _PIP_DEPENDS='circus==0.13.0 chaussette==1.3.0  meinheld==0.5.9 pygpgme==0.3'
 
 RUN _TAG=$(cat /VERSION) && \
+    sed --in-place "s/httpredir.debian.org/softlibre.unizar.es/g" /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends apt-utils && \
     echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
