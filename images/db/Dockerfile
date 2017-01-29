@@ -12,6 +12,7 @@ ENV PATH="/usr/lib/postgresql/$PG_MAJOR/bin:$PATH"
 
 # explicitly set user/group IDs
 RUN groupadd -r postgres --gid=999 && useradd -r -g postgres --uid=999 postgres && \
+    sed --in-place "s/httpredir.debian.org/softlibre.unizar.es/g" /etc/apt/sources.list && \
     # grab gosu for easy step-down from root && \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && \
     apt-get update && \
