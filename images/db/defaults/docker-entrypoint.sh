@@ -97,11 +97,25 @@ function get_pg_config()
     echo -n /etc/postgresql/$(get_pg_major_version)/main/postgresql.conf
 }
 
-
 function is_pg_hba_configured()
 {
     grep -q $POSTGRES_DB $(get_pg_hba)
     test $? -eq 0
+}
+
+function get_iface_gateway()
+{
+    echo -n $(ip route show|grep default|awk '{print $5}')
+}
+
+function get_default_ip()
+{
+    echo -n $( ip addr list $(get_iface_gateway) |grep "inet " |cut -d' ' -f6|cut -d/ -f1)
+}
+
+function get_default_network()
+{
+    echo -n $(ip route show|grep $(get_default_ip) |awk '{print $1}')
 }
 
 function set_pg_config()
@@ -117,7 +131,7 @@ function set_pg_config()
         echo "host all all $_ELEMENT trust" >> $_CON_FILE
     done
 
-    echo "host all all 172.17.0.0/16 trust" >> $_CON_FILE
+    echo "host all all $(get_default_network) trust" >> $_CON_FILE
     echo "host all all 127.0.0.1/8 trust" >> $_CON_FILE
 
     set_listen_addresses "*"
