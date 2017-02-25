@@ -43,10 +43,6 @@ RUN _TAG=$(cat /VERSION) && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# forward request and error logs to docker log collector
-RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
-    ln -sf /dev/stderr /var/log/nginx/error.log
-
 COPY defaults/etc/circus/circusd.ini /etc/circus/circusd.ini
 
 COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh
