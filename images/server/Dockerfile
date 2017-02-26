@@ -11,7 +11,7 @@ ENV TERM=xterm \
     _UID=890 \
     _GID=890 \
     _BUILD_DEPENDS='python-dev libgpgme11-dev python-all python-all-dev debhelper unzip g++ libcairo2-dev libjpeg62-turbo-dev libxml2-dev libxslt1-dev' \
-    _DEPENDS='dpkg-dev gnupg rng-tools curl rpm createrepo apt-utils bzip2 xz-utils libpq-dev libzmq-dev libgpgme11 postgresql-client nginx python2.7 python-minimal python-pip p7zip-full vim wget netcat-openbsd' \
+    _DEPENDS='dpkg-dev gnupg rng-tools curl rpm createrepo apt-utils bzip2 xz-utils libpq-dev libzmq-dev libgpgme11 postgresql-client nginx python2.7 python-minimal python-pip p7zip-full vim wget netcat-openbsd logrotate' \
     _PIP_DEPENDS='circus==0.13.0 chaussette==1.3.0  meinheld==0.5.9 pygpgme==0.3'
 
 RUN _TAG=$(cat /VERSION) && \
@@ -42,6 +42,8 @@ RUN _TAG=$(cat /VERSION) && \
     apt-get -y --auto-remove purge $_BUILD_DEPENDS && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+COPY defaults/etc/logrotate.d/nginx /etc/logrotate.d/nginx
 
 COPY defaults/etc/circus/circusd.ini /etc/circus/circusd.ini
 
