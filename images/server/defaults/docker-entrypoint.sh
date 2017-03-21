@@ -70,11 +70,12 @@ server {
     }
 }
 """ % {'static_root': settings.STATIC_ROOT, 'repo': settings.MIGASFREE_REPO_DIR}
-target = open('/etc/nginx/sites-available//migasfree.conf', 'w')
+target = open('/etc/nginx/sites-available/migasfree.conf', 'w')
 target.write(_CONFIG_NGINX)
 target.close()
 EOF
 ln -sf  /etc/nginx/sites-available/migasfree.conf  /etc/nginx/sites-enabled/migasfree.conf
+rm /etc/nginx/sites-available/default || :
 }
 
 function set_nginx_server_permissions()
