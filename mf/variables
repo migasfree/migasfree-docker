@@ -2,7 +2,7 @@
 
 #export FQDN=migasfree.mydomain.com
 #export FQDN=192.168.92.100
-export FQDN=$(hostname -I|awk '{print $1}')
+export FQDN=$(hostname -i|awk '{print $1}')
 
 #export MIGASFREE_VERSION=4.10
 #export MIGASFREE_VERSION=master
