@@ -27,21 +27,26 @@ RUN _TAG=$(cat /VERSION) && \
     update-rc.d ntp defaults && \
     apt-get install -y --no-install-recommends $_BUILD_DEPENDS  && \
     apt-get install -y --no-install-recommends $_DEPENDS && \
+    #python -m pip install --upgrade pip && \
+    #python -m pip install --upgrade setuptools && \
     pip install $_PIP_DEPENDS  && \
     wget https://github.com/migasfree/migasfree/archive/$_TAG.zip && \
     unzip $_TAG.zip && \
     cd migasfree-$_TAG && \
     pip install -r requirements/production.txt &&\
     python setup.py install && \
-    rm -rf $_TAG.zip && \
-    rm -rf migasfree-$_TAG && \
+    rm -rf /$_TAG.zip && \
+    rm -rf /migasfree-$_TAG && \
+    rm -rf /root/.cache && \
     # explicity set user/group IDs to www-data && \
     usermod -u $_UID www-data && \
     groupmod -g $_GID www-data && \
     django-admin collectstatic --noinput && \
     apt-get -y --auto-remove purge $_BUILD_DEPENDS && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/pip_build_root
+
 
 COPY defaults/etc/logrotate.d/nginx /etc/logrotate.d/nginx
 
