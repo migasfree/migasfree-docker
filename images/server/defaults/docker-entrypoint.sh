@@ -44,11 +44,11 @@ server {
     server_name $FQDN $HOST localhost 127.0.0.1;
     client_max_body_size 500M;
 
-    location /static/ {
-        alias %(static_root)s/;
+    location /static {
+        alias %(static_root)s;
     }
-    location /repo/ {
-        alias %(repo)s/;
+    location /repo {
+        alias %(repo)s;
         autoindex on;
     }
     location /repo/errors/ {
@@ -56,13 +56,9 @@ server {
         return 404;
     }
     location / {
-        proxy_pass http://localhost:8080/;
-        proxy_pass_header Server;
-        proxy_set_header Host \$host;
-        proxy_redirect off;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header X-Forwarded-Host \$server_name;
         proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$remote_addr;
-        proxy_set_header X-Scheme \$scheme;
         proxy_set_header REMOTE_ADDR \$remote_addr;
         proxy_connect_timeout 10;
         proxy_send_timeout 600;
