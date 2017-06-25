@@ -65,20 +65,20 @@ server {
         proxy_read_timeout 600;
     }
 }
-""" % {'static_root': settings.STATIC_ROOT, 'repo': settings.MIGASFREE_REPO_DIR}
+""" % {'static_root': settings.STATIC_ROOT, 'repo': settings.MIGASFREE_PUBLIC_DIR}
 target = open('/etc/nginx/sites-available/migasfree.conf', 'w')
 target.write(_CONFIG_NGINX)
 target.close()
 EOF
 ln -sf  /etc/nginx/sites-available/migasfree.conf  /etc/nginx/sites-enabled/migasfree.conf
-rm /etc/nginx/sites-available/default || :
+rm /etc/nginx/sites-available/default &> /dev/null || :
 }
 
 function set_nginx_server_permissions()
 {
     _USER=www-data
     # owner for repositories
-    _REPO_PATH=$(get_migasfree_setting MIGASFREE_REPO_DIR)
+    _REPO_PATH=$(get_migasfree_setting MIGASFREE_PUBLIC_DIR)
     owner $_REPO_PATH $_USER
     # owner for keys
     _KEYS_PATH=$(get_migasfree_setting MIGASFREE_KEYS_DIR)
@@ -97,7 +97,7 @@ function nginx_init
 
     create_nginx_config
 
-    python -c "import django; django.setup(); from migasfree.server.security import create_keys_server; create_keys_server()"
+    python -c "import django; django.setup(); from migasfree.server.secure import create_server_keys; create_server_keys()"
 
     /etc/init.d/nginx start
     set_nginx_server_permissions
@@ -185,8 +185,8 @@ function migasfree_init
         python - << EOF
 import django
 django.setup()
-from migasfree.server.fixtures import create_registers, sequence_reset
-create_registers()
+from migasfree.server.fixtures import create_initial_data, sequence_reset
+create_initial_data()
 sequence_reset()
 EOF
     )
@@ -210,8 +210,14 @@ circusctl status
 
 echo "One moment..."
 
+if [ "$PORT" = "80" ] || [ "$PORT" = "" ]
+then
+    _URL=http://$FQDN
+else
+    _URL=http://$FQDN:$PORT
+fi
 
-STATUS=$(LANGUAGE=C wget 127.0.0.1/admin/login/ 2>&1 | egrep "HTTP" |awk '{print $6}')
+STATUS=$(curl --write-out %{http_code} --silent --output /dev/null $FQDN/admin/login/)
 if [ $STATUS = 200 ] ; then
     rm -f index.html &>/dev/null
     echo ""
@@ -224,11 +230,11 @@ if [ $STATUS = 200 ] ; then
     echo '                \           \  '
     echo '                  -----------  '
     echo ''
-    echo "        http://$FQDN:$PORT is running."
+    echo "        $_URL is running."
     echo ''
     echo ''
 else
-    echo "        Sorry http://$FQDN:$PORT is not operative :("
+    echo "        Sorry $_URL is not operative :("
     exit 1
 fi
 

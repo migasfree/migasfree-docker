@@ -16,7 +16,7 @@ server:
     - "/var/lib/migasfree/${FQDN}/keys:/usr/share/migasfree-server"
 
 db:
-  image: migasfree/db:0.3
+  image: migasfree/db:${MIGASFREE_VERSION_DB}
   container_name: ${FQDN}-db
   environment:
     - POSTGRES_CRON=${POSTGRES_CRON}

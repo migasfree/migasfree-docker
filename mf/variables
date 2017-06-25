@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #export FQDN=migasfree.mydomain.com
-#export FQDN=192.168.92.100
-export FQDN=$(hostname -i|awk '{print $1}')
+export FQDN=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | sed 's/ //g')
 
-#export MIGASFREE_VERSION=4.10
+export MIGASFREE_VERSION_DB=0.3
+
+#export MIGASFREE_VERSION=4.13
 #export MIGASFREE_VERSION=master
-#export MIGASFREE_VERSION=$(cat ../images/server/VERSION)
 export MIGASFREE_VERSION=latest
 
 export MIGASFREE_PORT=80
