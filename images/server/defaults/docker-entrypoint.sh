@@ -199,6 +199,20 @@ EOF
 }
 
 
+function wait_nginx {
+    echo "Waiting ngnix ... "
+    while true
+    do
+        STATUS=$(curl --write-out %{http_code} --silent --output /dev/null $FQDN/accounts/login/) || :
+        if [ $STATUS = 200 ]
+        then
+            break
+        fi
+        sleep 1
+    done
+}
+
+
 set_TZ
 migasfree_init
 
@@ -217,26 +231,19 @@ else
     _URL=http://$FQDN:$PORT
 fi
 
-STATUS=$(curl --write-out %{http_code} --silent --output /dev/null $FQDN/admin/login/)
-if [ $STATUS = 200 ] ; then
-    rm -f index.html &>/dev/null
-    echo ""
-    echo "        Time zome: $TZ  $(date)"
-    echo "        Processes: $(nproc)"
-    echo ''
-    echo '               -------O--      '
-    echo '              \         o \    '
-    echo '               \           \   '
-    echo '                \           \  '
-    echo '                  -----------  '
-    echo ''
-    echo "        $_URL is running."
-    echo ''
-    echo ''
-else
-    echo "        Sorry $_URL is not operative :("
-    exit 1
-fi
+wait_nginx
+
+echo "
+        Container: $HOSTNAME
+        Time zome: $TZ  $(date)
+        Processes: $(nproc)
+               -------O--
+              \\         o \\
+               \\           \\
+                \\           \\
+                  -----------
+        $_URL is running.
+"
 
 while :
 do
