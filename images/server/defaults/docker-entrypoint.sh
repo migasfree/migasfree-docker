@@ -47,8 +47,16 @@ server {
     location /static {
         alias %(static_root)s;
     }
+    location /public {
+        alias %(pubic)s;
+        autoindex on;
+    }
+    location /public/errors/ {
+        deny all;
+        return 404;
+    }
     location /repo {
-        alias %(repo)s;
+        alias %(public)s;
         autoindex on;
     }
     location /repo/errors/ {
@@ -65,7 +73,7 @@ server {
         proxy_read_timeout 600;
     }
 }
-""" % {'static_root': settings.STATIC_ROOT, 'repo': settings.MIGASFREE_PUBLIC_DIR}
+""" % {'static_root': settings.STATIC_ROOT, 'public': settings.MIGASFREE_PUBLIC_DIR}
 target = open('/etc/nginx/sites-available/migasfree.conf', 'w')
 target.write(_CONFIG_NGINX)
 target.close()
