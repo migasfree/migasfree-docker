@@ -48,7 +48,7 @@ server {
         alias %(static_root)s;
     }
     location /public {
-        alias %(pubic)s;
+        alias %(public)s;
         autoindex on;
     }
     location /public/errors/ {
