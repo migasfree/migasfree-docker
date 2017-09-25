@@ -65,7 +65,7 @@ server {
     }
     location / {
         proxy_pass http://127.0.0.1:8080;
-        proxy_set_header Host $FQDN;
+        proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Host \$server_name;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header REMOTE_ADDR \$remote_addr;
