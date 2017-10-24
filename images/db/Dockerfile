@@ -22,7 +22,11 @@ RUN groupadd -r postgres --gid=999 && useradd -r -g postgres --uid=999 postgres 
     pg_dropcluster $PG_MAJOR main && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /var/run/postgresql && chown -R postgres /var/run/postgresql
+    mkdir -p /var/run/postgresql && chown -R postgres /var/run/postgresql && \
+    mkdir -p /var/lib/postgresql/data && \
+    chown postgres /var/lib/postgresql/data && \
+    chmod 700 /var/lib/postgresql/data
+
 
 VOLUME /var/lib/postgresql/data
 
