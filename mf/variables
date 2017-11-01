@@ -5,7 +5,7 @@ export FQDN=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | sed '
 
 export MIGASFREE_VERSION_DB=0.4
 
-export MIGASFREE_VERSION=4.14.rc1
+export MIGASFREE_VERSION=4.14.rc5
 #export MIGASFREE_VERSION=master
 #export MIGASFREE_VERSION=latest
 
