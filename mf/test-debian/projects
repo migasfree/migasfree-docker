@@ -1,6 +1,8 @@
 debian:wheezy
 debian:jessie
 debian:stretch
+debian:sid
 ubuntu:precise
 ubuntu:trusty
 ubuntu:xenial
+ubuntu:devel
