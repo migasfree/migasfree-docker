@@ -1,7 +1,7 @@
 #!/bin/bash
 
 _MAC_PREFIX="02:42:ac"  # DOCKER
-_PATH_PKG=/var/migasfree/dist
+_PATH_PKGS=/var/migasfree/dist
 
 function mac_project {
   _PROJECT="$1"
@@ -29,9 +29,8 @@ fi
 
 for _PROJECT in $(cat projects)
 do
-
   docker run --rm -ti \
-    --mac-address $(mac_project $_PROJECT)
+    --mac-address $(mac_project $_PROJECT) \
     -e MIGASFREE_CLIENT_SERVER=$_SERVER \
     -e MIGASFREE_CLIENT_PROJECT=$_PROJECT \
     -e MIGASFREE_PACKAGER_USER=admin \
@@ -39,7 +38,7 @@ do
     -e MIGASFREE_PACKAGER_VERSION=$_PROJECT \
     -e MIGASFREE_PACKAGER_STORE=org \
     -e USER=root \
-    -v /tmp:/tmp $_:PROJECT bash -c "
+    -v $_PATH_PKGS:$_PATH_PKGS $_PROJECT bash -c "
         apt-get -y update
         apt-get -y upgrade
         dpkg -i  $_PATH_PKGS/debian/*.deb
