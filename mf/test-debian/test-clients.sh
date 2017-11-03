@@ -29,6 +29,7 @@ fi
 
 for _PROJECT in $(cat projects)
 do
+  rm $_PROJECT.log || :
   docker run --rm -ti \
     --mac-address $(mac_project $_PROJECT) \
     -e MIGASFREE_CLIENT_SERVER=$_SERVER \
@@ -45,5 +46,5 @@ do
         apt-get -yf install
         migasfree -u
         migasfree-upload -f $_PATH_PKGS/debian/*.deb
-    "
+    " | tee -a $_PROJECT.log
 done
