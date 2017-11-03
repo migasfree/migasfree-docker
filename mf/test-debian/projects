@@ -1,0 +1,6 @@
+debian:wheezy
+debian:jessie
+debian:stretch
+ubuntu:precise
+ubuntu:trusty
+ubuntu:xenial
