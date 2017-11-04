@@ -17,13 +17,11 @@ function mac_random {
 docker build -t build-client-debian .
 docker run --rm -ti -v $_PATH_PKGS/debian:/migasfree-client-master/deb_dist build-client-debian
 
+_SERVER=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | sed 's/ //g')
 if [ "$PWD_HOST_FQDN" = "labs.play-with-docker.com" ]
 then
-    _IP=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | sed 's/ //g')
-    _IP=$(echo "$_IP"|tr "." "-")
-    _SERVER=ip"$_IP"-$SESSION_ID-80.direct.labs.play-with-docker.com
-else
-    _SERVER=localhost
+    _SERVER=$(echo "$_SERVER"|tr "." "-")
+    _SERVER=ip"$_SERVER"-$SESSION_ID-80.direct.labs.play-with-docker.com
 fi
 
 
@@ -34,12 +32,16 @@ do
     --mac-address $(mac_project $_PROJECT) \
     -e MIGASFREE_CLIENT_SERVER=$_SERVER \
     -e MIGASFREE_CLIENT_PROJECT=$_PROJECT \
+    -e MIGASFREE_CLIENT_DEBUG=False \
     -e MIGASFREE_PACKAGER_USER=admin \
     -e MIGASFREE_PACKAGER_PASSWORD=admin \
     -e MIGASFREE_PACKAGER_VERSION=$_PROJECT \
     -e MIGASFREE_PACKAGER_STORE=org \
     -e USER=root \
-    -v $_PATH_PKGS:$_PATH_PKGS $_PROJECT bash -c "
+    -v $_PATH_PKGS:$_PATH_PKGS \
+    -v "/tmp/migasfree-client:/tmp/migasfree-client" \
+    $_PROJECT \
+    bash -c "
         apt-get -y update
         apt-get -y upgrade
         dpkg -i  $_PATH_PKGS/debian/*.deb
