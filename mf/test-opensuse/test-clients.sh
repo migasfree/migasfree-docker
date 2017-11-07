@@ -42,11 +42,11 @@ do
         -v "/tmp/migasfree-client:/tmp/migasfree-client" \
         $_PROJECT \
         bash -c "
-           yum -y install wget epel-release
+           zypper install -y wget epel-release
            cd /etc/yum.repos.d/
            wget http://pkgrepo.linuxtech.net/el6/release/linuxtech.repo
-           yum -y update
-           yum -y localinstall $(ls $_PATH_PKGS/opensuse/*.noarch.rpm)
+           zypper update -y
+           zypper install -y $(ls $_PATH_PKGS/opensuse/*.noarch.rpm)
 
            migasfree -u
 

@@ -1,7 +1,7 @@
-FROM opensuse:13.2
+FROM opensuse:42.2
 
-RUN yum update -y && \
-    yum install -y wget unzip rpm-build gettext
+RUN zypper update -y && \
+    zypper install -y wget unzip rpm-build gettext
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
