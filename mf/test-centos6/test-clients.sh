@@ -14,8 +14,8 @@ function mac_random {
 }
 
 
-docker build -t build-client-centos .
-docker run --rm -ti -v $_PATH_PKGS/centos:/migasfree-client-master/dist build-client-centos
+docker build -t build-client-centos6 .
+docker run --rm -ti -v $_PATH_PKGS/centos6:/migasfree-client-master/dist build-client-centos6
 
 _SERVER=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | sed 's/ //g')
 if [ "$PWD_HOST_FQDN" = "labs.play-with-docker.com" ]
@@ -24,6 +24,7 @@ then
     _SERVER=ip"$_SERVER"-$SESSION_ID-80.direct.labs.play-with-docker.com
 fi
 
+cp  ../data/* $_PATH_PKGS/centos6/
 
 for _PROJECT in $(cat projects)
 do
@@ -46,16 +47,30 @@ do
            cd /etc/yum.repos.d/
            wget http://pkgrepo.linuxtech.net/el6/release/linuxtech.repo
            yum -y update
-           yum -y localinstall $(ls $_PATH_PKGS/centos/*.noarch.rpm)
-
-
-           # BUGFIX TODO
-           mkdir -p /usr/share/doc/migasfree-client ||:
-           echo '4.14' > /usr/share/doc/migasfree-client/VERSION
-
+           yum -y localinstall $(ls $_PATH_PKGS/centos6/*.noarch.rpm)
 
            migasfree -u
 
-           migasfree-upload -f $(ls $_PATH_PKGS/centos/*.noarch.rpm)
-           " | tee -a $_PROJECT.log
+           migasfree-upload -f $(ls $_PATH_PKGS/centos6/*.noarch.rpm)
+
+           yum -y install python-requests
+
+           cd $_PATH_PKGS/centos6
+           python data.py # Create Deployment migasfree-client
+           migasfree -u
+           yum -y erase migasfree-client
+           yum -y install migasfree-client
+           migasfree -u
+
+           rpm -qa | grep migasfree-client
+           if [ \$? = 0 ]
+           then
+               echo '$_PROJECT OK' >> $_PATH_PKGS/data.log
+           else
+               echo '$_PROJECT ERROR' >> $_PATH_PKGS/data.log
+           fi
+
+        " | tee -a $_PROJECT.log
 done
+
+cat $_PATH_PKGS/data.log
