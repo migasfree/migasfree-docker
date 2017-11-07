@@ -24,6 +24,7 @@ then
     _SERVER=ip"$_SERVER"-$SESSION_ID-80.direct.labs.play-with-docker.com
 fi
 
+cp  ../data/* $_PATH_PKGS/opensuse/
 
 for _PROJECT in $(cat projects)
 do
@@ -42,14 +43,32 @@ do
         -v "/tmp/migasfree-client:/tmp/migasfree-client" \
         $_PROJECT \
         bash -c "
-           zypper install -y wget epel-release
-           cd /etc/yum.repos.d/
-           wget http://pkgrepo.linuxtech.net/el6/release/linuxtech.repo
+
            zypper update -y
-           zypper install -y $(ls $_PATH_PKGS/opensuse/*.noarch.rpm)
+           zypper --no-gpg-checks install -y $(ls $_PATH_PKGS/opensuse/*.noarch.rpm)
 
            migasfree -u
 
            migasfree-upload -f $(ls $_PATH_PKGS/opensuse/*.noarch.rpm)
+
+
+           zypper install -y python-requests
+
+           cd $_PATH_PKGS/centos
+           python data.py # Create Deployment migasfree-client
+           migasfree -u
+           zypper remove -y migasfree-client
+           zypper install -y migasfree-client
+           migasfree -u
+
+           rpm -qa | grep migasfree-client
+           if [ \$? = 0 ]
+           then
+               echo '$_PROJECT OK' >> $_PATH_PKGS/data.log
+           else
+               echo '$_PROJECT ERROR' >> $_PATH_PKGS/data.log
+           fi
            " | tee -a $_PROJECT.log
 done
+
+cat $_PATH_PKGS/data.log
