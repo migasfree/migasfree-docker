@@ -24,6 +24,7 @@ then
     _SERVER=ip"$_SERVER"-$SESSION_ID-80.direct.labs.play-with-docker.com
 fi
 
+cp  ../data/* $_PATH_PKGS/fedora/
 
 for _PROJECT in $(cat projects)
 do
@@ -48,14 +49,28 @@ do
            yum -y update
            yum -y install $(ls $_PATH_PKGS/fedora/*.noarch.rpm)
 
-
-           # BUGFIX TODO
-           mkdir -p /usr/share/doc/migasfree-client ||:
-           echo '4.14' > /usr/share/doc/migasfree-client/VERSION
-
-
            migasfree -u
 
            migasfree-upload -f $(ls $_PATH_PKGS/fedora/*.noarch.rpm)
+
+           yum -y install python-requests
+
+           cd $_PATH_PKGS/fedora
+           python data.py # Create Deployment migasfree-client
+           migasfree -u
+           yum -y erase migasfree-client
+           yum -y install migasfree-client
+           migasfree -u
+
+           rpm -qa | grep migasfree-client
+           if [ \$? = 0 ]
+           then
+               echo '$_PROJECT OK' >> $_PATH_PKGS/data.log
+           else
+               echo '$_PROJECT ERROR' >> $_PATH_PKGS/data.log
+           fi
+
            " | tee -a $_PROJECT.log
 done
+
+cat $_PATH_PKGS/data.log
