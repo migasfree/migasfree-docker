@@ -54,7 +54,7 @@ do
 
            zypper install -y python-requests
 
-           cd $_PATH_PKGS/centos
+           cd $_PATH_PKGS/opensuse
            python data.py # Create Deployment migasfree-client
            migasfree -u
            zypper remove -y migasfree-client
