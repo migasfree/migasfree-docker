@@ -24,6 +24,7 @@ then
     _SERVER=ip"$_SERVER"-$SESSION_ID-80.direct.labs.play-with-docker.com
 fi
 
+cp  ../data/* $_PATH_PKGS/debian/
 
 for _PROJECT in $(cat projects)
 do
@@ -42,11 +43,29 @@ do
     -v "/tmp/migasfree-client:/tmp/migasfree-client" \
     $_PROJECT \
     bash -c "
+        cd $_PATH_PKGS/debian/
         apt-get -y update
-        apt-get -y upgrade
-        dpkg -i  $_PATH_PKGS/debian/*.deb
+        dpkg -i  *.deb
         apt-get -yf install
+
         migasfree -u
         migasfree-upload -f $_PATH_PKGS/debian/*.deb
+
+        apt-get -y install  python-requests
+        python data.py # Create Deployment migasfree-client
+        migasfree -u
+        apt-get -y purge migasfree-client
+        apt-get -y install migasfree-client
+        migasfree -u
+
+       dpkg -l | grep migasfree-client
+       if [ \$? = 0 ]
+       then
+           echo '$_PROJECT OK' >> $_PATH_PKGS/data.log
+       else
+           echo '$_PROJECT ERROR' >> $_PATH_PKGS/data.log
+       fi
     " | tee -a $_PROJECT.log
 done
+
+cat $_PATH_PKGS/data.log
