@@ -1,26 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-
-import os, datetime
+import os
+import datetime
 
 from api import MigasfreeApi
 
 
-def createDeploymentMigasfreeClient( 
-    server, project, 
+def createDeploymentMigasfreeClient(
+    server, project,
     user="admin", password=""):
     """
     Creates a repository named "migasfree client"
     """
-    
 
     api = MigasfreeApi(server=server, user=user, password=password)
 
     project_id = api.id("projects", {"name": project})
-    
+
     # get migasfree client package id
-    for package in api.filter("packages",{"project__id": project_id}):
+    for package in api.filter("packages", {"project__id": project_id}):
         if "migasfree-client" in package["name"]:
             package_id = package["id"]
             break
@@ -52,13 +51,16 @@ def createDeploymentMigasfreeClient(
 Status: %s
 Reason: %s
 Content: %s
-*******************************************************""" % (deployment_id.status_code, deployment_id.reason, "deployment_id._content")
+*******************************************************""" % (
+    deployment_id.status_code,
+    deployment_id.reason,
+    "deployment_id._content")
 
 if __name__ == "__main__":
-    
+
     user = "admin"
     password = "admin"
-    server=os.environ["MIGASFREE_CLIENT_SERVER"]
+    server = os.environ["MIGASFREE_CLIENT_SERVER"]
     project = os.environ["MIGASFREE_CLIENT_PROJECT"]
-    
-    createDeploymentMigasfreeClient(server,project,user,password)
+
+    createDeploymentMigasfreeClient(server, project, user, password)

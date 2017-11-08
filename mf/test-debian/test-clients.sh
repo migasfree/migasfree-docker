@@ -14,8 +14,14 @@ function mac_random {
 }
 
 
+cd ../data
+docker build -t api-migasfree .
+cd -
+
+
 docker build -t build-client-debian .
 docker run --rm -ti -v $_PATH_PKGS/debian:/migasfree-client-master/deb_dist build-client-debian
+
 
 _SERVER=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | sed 's/ //g')
 if [ "$PWD_HOST_FQDN" = "labs.play-with-docker.com" ]
@@ -24,12 +30,11 @@ then
     _SERVER=ip"$_SERVER"-$SESSION_ID-80.direct.labs.play-with-docker.com
 fi
 
-cp  ../data/* $_PATH_PKGS/debian/
 
 for _PROJECT in $(cat projects)
 do
   rm $_PROJECT.log || :
-  docker run --rm -ti \
+  docker run -ti \
     --mac-address $(mac_project $_PROJECT) \
     -e MIGASFREE_CLIENT_SERVER=$_SERVER \
     -e MIGASFREE_CLIENT_PROJECT=$_PROJECT \
@@ -41,6 +46,7 @@ do
     -e USER=root \
     -v $_PATH_PKGS:$_PATH_PKGS \
     -v "/tmp/migasfree-client:/tmp/migasfree-client" \
+    --name client-test \
     $_PROJECT \
     bash -c "
         cd $_PATH_PKGS/debian/
@@ -51,8 +57,25 @@ do
         migasfree -u
         migasfree-upload -f $_PATH_PKGS/debian/*.deb
 
-        apt-get -y install  python-requests
-        python data.py # Create Deployment migasfree-client
+    " | tee -a $_PROJECT.log
+
+
+  docker commit client-test client-test-img
+
+  docker run -ti --rm \
+    -e MIGASFREE_CLIENT_SERVER=$_SERVER \
+    -e MIGASFREE_CLIENT_PROJECT=$_PROJECT \
+    api-migasfree bash -c "
+        cd /
+        /usr/bin/python data.py
+    " | tee -a $_PROJECT.log
+
+
+  docker run -ti --rm \
+    -v $_PATH_PKGS:$_PATH_PKGS \
+    -v "/tmp/migasfree-client:/tmp/migasfree-client" \
+    client-test-img \
+    bash -c "
         migasfree -u
         apt-get -y purge migasfree-client
         apt-get -y install migasfree-client
@@ -66,6 +89,11 @@ do
            echo '$_PROJECT ERROR' >> $_PATH_PKGS/data.log
        fi
     " | tee -a $_PROJECT.log
+
+
+    docker rmi -f client-test-img
+    docker rm -f client-test
+
 done
 
 cat $_PATH_PKGS/data.log
