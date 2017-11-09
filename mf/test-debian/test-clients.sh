@@ -72,6 +72,7 @@ do
 
 
   docker run -ti --rm \
+    --mac-address $(mac_project $_PROJECT) \
     -v $_PATH_PKGS:$_PATH_PKGS \
     -v "/tmp/migasfree-client:/tmp/migasfree-client" \
     client-test-img \
