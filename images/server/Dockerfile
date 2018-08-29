@@ -30,13 +30,6 @@ RUN _TAG=$(cat /VERSION) && \
     python -m pip install --upgrade pip && \
     python -m pip install --upgrade setuptools wheel && \
     pip install $_PIP_DEPENDS  && \
-    wget https://bitbucket.org/nlaurance/django-url-tools/get/17352a923541.zip && \
-    unzip 17352a923541.zip && \
-    cd nlaurance-django-url-tools-17352a923541 && \
-    python setup.py install && \
-    cd .. && \
-    rm -rf 17352a923541.zip && \
-    rm -rf nlaurance-django-url-tools-17352a923541 && \
     wget https://github.com/migasfree/migasfree/archive/$_TAG.zip && \
     unzip $_TAG.zip && \
     cd migasfree-$_TAG && \
