@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #export FQDN=migasfree.mydomain.com
-export FQDN=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | sed 's/ //g')
+export FQDN=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | cut -d ' ' -f 1)
 
 export MIGASFREE_VERSION_DB=0.4
 
