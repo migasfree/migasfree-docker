@@ -44,9 +44,34 @@ server {
     server_name $FQDN $HOST localhost 127.0.0.1;
     client_max_body_size 500M;
 
+
+    # STATIC
+    # ======
     location /static {
         alias %(static_root)s;
     }
+
+
+    # SOURCES
+    # ======= 
+    #  PACKAGES deb
+    location ~* /src/?(.*)deb$ {
+        alias %(public)s/$1deb;
+        error_page 404 /get_remotefile;
+    }
+    #  PACKAGES rpm
+    location ~* /src/?(.*)rpm$ {
+        alias %(public)s/$1rpm;
+        error_page 404 /get_remotefile;
+    }
+    #  METADATA
+    location /src {
+        return 301 /get_sourcefile;
+    }
+
+
+    # DEPLOYMENTS
+    # ===========
     location /public {
         alias %(public)s;
         autoindex on;
@@ -55,6 +80,10 @@ server {
         deny all;
         return 404;
     }
+
+
+    # REPO (compatibility)
+    # ====================
     location /repo {
         alias %(public)s;
         autoindex on;
@@ -63,6 +92,10 @@ server {
         deny all;
         return 404;
     }
+
+
+    # DINAMIC
+    # ======= 
     location / {
         proxy_pass http://127.0.0.1:8080;
         proxy_set_header Host \$http_host;
