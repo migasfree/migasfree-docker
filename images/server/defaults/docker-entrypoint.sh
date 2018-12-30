@@ -57,16 +57,12 @@ server {
     #  PACKAGES deb
     location ~* /src/?(.*)deb\$ {
         alias /var/migasfree/repo/\$1deb;
-        error_page 404 /get_sourcefile/\$1deb;
+        error_page 404 = @backend;
     }
     #  PACKAGES rpm
     location ~* /src/?(.*)rpm\$ {
         alias /var/migasfree/repo/\$1rpm;
-        error_page 404 /get_sourcefile/\$1rpm;
-    }
-    #  METADATA
-    location ~ /src/?(.*)\$ {
-        return 301 /get_sourcefile/\$1;
+        error_page 404 = @backend;
     }
 
 
@@ -94,9 +90,12 @@ server {
     }
 
 
-    # DINAMIC
+    # BACKEND
     # =======
     location / {
+        try_files \$uri @backend;
+    }
+    location @backend {
         proxy_pass http://127.0.0.1:8080;
         proxy_set_header Host \$http_host;
         proxy_set_header X-Forwarded-Host \$server_name;
