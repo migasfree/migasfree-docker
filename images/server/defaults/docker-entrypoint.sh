@@ -53,20 +53,20 @@ server {
 
 
     # SOURCES
-    # ======= 
+    # =======
     #  PACKAGES deb
-    location ~* /src/?(.*)deb$ {
-        alias %(public)s/$1deb;
-        error_page 404 /get_remotefile;
+    location ~* /src/?(.*)deb\$ {
+        alias /var/migasfree/repo/\$1deb;
+        error_page 404 /get_sourcefile/\$1deb;
     }
     #  PACKAGES rpm
-    location ~* /src/?(.*)rpm$ {
-        alias %(public)s/$1rpm;
-        error_page 404 /get_remotefile;
+    location ~* /src/?(.*)rpm\$ {
+        alias /var/migasfree/repo/\$1rpm;
+        error_page 404 /get_sourcefile/\$1rpm;
     }
     #  METADATA
-    location /src {
-        return 301 /get_sourcefile;
+    location ~ /src/?(.*)\$ {
+        return 301 /get_sourcefile/\$1;
     }
 
 
@@ -95,7 +95,7 @@ server {
 
 
     # DINAMIC
-    # ======= 
+    # =======
     location / {
         proxy_pass http://127.0.0.1:8080;
         proxy_set_header Host \$http_host;
