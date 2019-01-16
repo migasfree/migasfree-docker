@@ -17,7 +17,7 @@ function mac_random {
 docker build -t build-client-centos7 .
 docker run --rm -ti -v $_PATH_PKGS/centos7:/migasfree-client-master/dist build-client-centos7
 
-_SERVER=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | sed 's/ //g')
+_SERVER=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | cut -d ' ' -f 1)
 if [ "$PWD_HOST_FQDN" = "labs.play-with-docker.com" ]
 then
     _SERVER=$(echo "$_SERVER"|tr "." "-")

@@ -23,7 +23,7 @@ docker build -t build-client-debian .
 docker run --rm -ti -v $_PATH_PKGS/debian:/migasfree-client-master/deb_dist build-client-debian
 
 
-_SERVER=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | sed 's/ //g')
+_SERVER=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | cut -d ' ' -f 1)
 if [ "$PWD_HOST_FQDN" = "labs.play-with-docker.com" ]
 then
     _SERVER=$(echo "$_SERVER"|tr "." "-")
