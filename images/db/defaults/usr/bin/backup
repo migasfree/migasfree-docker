@@ -30,4 +30,14 @@ else
   echo "$(date) ERROR !!! "
 fi
 
+echo ""
+echo "-----------------------------------------"
+echo "$(date) VACUUM database $POSTGRES_DB..."
+/bin/su postgres -c "psql -d $POSTGRES_DB -c 'VACUUM VERBOSE'"
+if [ $? = 0 ]; then
+  echo "$(date) VACUUM Done!"
+else
+  echo "$(date) VACUUM ERROR !!! "
+fi
+
 } 2>&1 | tee $_LOG
