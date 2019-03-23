@@ -2,7 +2,7 @@
 
 USER = migasfree
 REPO = db
-VERSION ?= 0.4
+VERSION ?= 0.5
 
 
 .PHONY: build push release
