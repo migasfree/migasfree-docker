@@ -5,4 +5,5 @@ debian:sid
 ubuntu:precise
 ubuntu:trusty
 ubuntu:xenial
+ubuntu:bionic
 ubuntu:devel
