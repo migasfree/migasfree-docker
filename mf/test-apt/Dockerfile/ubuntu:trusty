@@ -1,7 +1,7 @@
-FROM debian:wheezy
+FROM ubuntu:trusty
 
 RUN apt-get update -y && \
-    apt-get install -y wget unzip python-stdeb
+    apt-get install -y wget unzip python-stdeb  dh-python git
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 

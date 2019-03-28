@@ -1,9 +1,11 @@
-debian:wheezy
 debian:jessie
 debian:stretch
+debian:buster
 debian:sid
 ubuntu:precise
 ubuntu:trusty
 ubuntu:xenial
 ubuntu:bionic
+ubuntu:cosmic
 ubuntu:devel
+

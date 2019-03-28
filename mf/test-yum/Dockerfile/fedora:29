@@ -1,7 +1,7 @@
-FROM fedora:25
+FROM fedora:29
 
 RUN yum update -y && \
-    yum install -y wget unzip rpm-build gettext 
+    yum install -y wget unzip rpm-build gettext python
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 

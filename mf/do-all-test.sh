@@ -1,8 +1,9 @@
 #!/bin/bash
 . variables
 
-MIGASFREE_VERSION_DB=0.4
-MIGASFREE_VERSION=master
+MIGASFREE_VERSION_DB=0.5
+#MIGASFREE_VERSION=master
+MIGASFREE_VERSION=4.17.rc1
 
 _SERVER=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | cut -d ' ' -f 1)
 
@@ -56,23 +57,16 @@ wait_nginx
 rm /var/migasfree/dist/data.log || :
 
 
-cd test-debian
+cd test-apt
 bash test-clients.sh
 cd ..
 
-cd test-centos6
+
+cd test-yum
 bash test-clients.sh
 cd ..
 
-cd test-centos7
-bash test-clients.sh
-cd ..
-
-cd test-fedora
-bash test-clients.sh
-cd ..
-
-cd test-opensuse
+cd test-zypper
 bash test-clients.sh
 cd ..
 
