@@ -9,11 +9,22 @@ import platform
 
 from migasfree_sdk.api import ApiToken
 
+from migasfree_client.utils import get_hardware_uuid
 
-def createDeploymentInternalMigasfreeClient( server, project, user="admin"):
+server = os.environ["MIGASFREE_CLIENT_SERVER"]
+project = os.environ["MIGASFREE_CLIENT_PROJECT"]
+user = os.environ["MIGASFREE_PACKAGER_USER"]
+password = os.environ["MIGASFREE_PACKAGER_PASSWORD"]
+
+
+def createDeploymentInternalMigasfreeClient():
     """
     Creates a repository named "migasfree client"
     """
+
+    server = os.environ["MIGASFREE_CLIENT_SERVER"]
+    project = os.environ["MIGASFREE_CLIENT_PROJECT"]
+    user = os.environ["MIGASFREE_PACKAGER_USER"]
 
     api = ApiToken(server=server, user=user)
 
@@ -61,10 +72,14 @@ Content: %s
     "deployment_id._content")
 
 
-def createDeploymenExternalBase(server, project, user="admin"):
+def createDeploymenExternalBase():
     """
     Creates a repository named "BASE"
     """
+
+    server = os.environ["MIGASFREE_CLIENT_SERVER"]
+    project = os.environ["MIGASFREE_CLIENT_PROJECT"]
+    user = os.environ["MIGASFREE_PACKAGER_USER"]
 
     api = ApiToken(server=server, user=user)
     project_id = api.id("projects", {"name": project})
@@ -105,10 +120,15 @@ def createDeploymenExternalBase(server, project, user="admin"):
         data["suite"] = project.split(":")[1]
         data["components"] = "Everything/x86_64/os"
         data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch"
-    elif project.startswith("opensuse"):
+    elif project.startswith("opensuse:"):
         data["base_url"] = "http://download.opensuse.org/distribution/leap"
         data["suite"] = project.split(":")[1]
         data["components"] = "repo/oss/suse"
+        data["options"] = ""
+    elif project.startswith("opensuse/leap:"):
+        data["base_url"] = "http://download.opensuse.org/distribution/leap"
+        data["suite"] = project.split(":")[1]
+        data["components"] = "repo/oss"
         data["options"] = ""
     else:
         return
@@ -130,7 +150,12 @@ Content: %s
     "deployment_id._content")
 
 
-def save_token(server, user, password):
+def save_token():
+
+    server = os.environ["MIGASFREE_CLIENT_SERVER"]
+    user = os.environ["MIGASFREE_PACKAGER_USER"]
+    password = os.environ["MIGASFREE_PACKAGER_PASSWORD"]
+
     _ok_codes = [
         requests.codes.ok, requests.codes.created,
         requests.codes.moved, requests.codes.found,
@@ -171,15 +196,53 @@ def get_user_path():
     return os.getenv(_env)
 
 
-if __name__ == "__main__":
+def checkSync():
+    server=os.environ["MIGASFREE_CLIENT_SERVER"]
+    user=os.environ["MIGASFREE_PACKAGER_USER"]
+    api = ApiToken(server=server, user=user)
 
-    user = "admin"
-    password = "admin"
-    server = os.environ["MIGASFREE_CLIENT_SERVER"]
-    project = os.environ["MIGASFREE_CLIENT_PROJECT"]
+    try:
+        computer = api.get("computers",{"id":get_cid()})
+        if computer["sync_end_date"]:
+            print "OK    Synchronization"
+        else:
+            print "ERROR Synchronization"
+    except:
+        print "ERROR Synchronization"
 
-    # save token file for user
-    save_token(server, user, password)
 
-    createDeploymentInternalMigasfreeClient(server, project, user)
-    createDeploymenExternalBase(server,project,user)
+def checkHW():
+    server=os.environ["MIGASFREE_CLIENT_SERVER"]
+    user=os.environ["MIGASFREE_PACKAGER_USER"]
+    api = ApiToken(server=server, user=user)
+
+    try:
+        hw = api.get("computers/{}/hardware".format(get_cid()),{})
+        if len(hw)>0:
+            print "OK    Hardware"
+        else:
+            print "EMPTY Hardware"
+    except:
+        print "ERROR Hardware"
+
+def get_cid():
+    server=os.environ["MIGASFREE_CLIENT_SERVER"]
+    user=os.environ["MIGASFREE_PACKAGER_USER"]
+    api = ApiToken(server=server, user=user)
+    try:
+        r = api.get("computers",{"uuid": get_hardware_uuid()})
+        return r["id"]
+    except:
+        return 0
+
+def checkErrors():
+    server=os.environ["MIGASFREE_CLIENT_SERVER"]
+    user=os.environ["MIGASFREE_PACKAGER_USER"]
+    api = ApiToken(server=server, user=user)
+
+    try:
+        errors = api.filter("errors",{"computer__id": get_cid()})
+        for e in errors:
+            print "          ERROR ", e["description"].replace("\n","\n          ")
+    except:
+        print "ERROR ? errors in synchronization"

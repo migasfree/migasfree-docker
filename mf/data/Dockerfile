@@ -1,9 +1,0 @@
-FROM debian:jessie
-
-RUN echo "deb http://deb.debian.org/debian/ jessie main" > /etc/apt/sources.list && \
-    echo "deb http://security.debian.org/ jessie/updates main" >> /etc/apt/sources.list && \
-    apt-get update -y && \
-    apt-get -y install wget && \ 
-    wget -O - http://migasfree.org/pub/install-sdk | bash
-
-COPY data.py /data.py

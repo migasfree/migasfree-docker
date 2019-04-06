@@ -1,8 +1,0 @@
-FROM opensuse:42.2
-
-RUN zypper update -y && \
-    zypper install -y wget unzip rpm-build gettext python
-
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-
-ENTRYPOINT ["/bin/bash", "/docker-entrypoint.sh"]

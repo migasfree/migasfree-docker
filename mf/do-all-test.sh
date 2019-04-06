@@ -53,10 +53,30 @@ docker-compose up -d
 
 wait_nginx
 
-
+echo
 rm /var/migasfree/dist/data.log || :
 
+pushd /var/migasfree/dist/
 
+if [ -d migasfree-client ]
+then
+    cd migasfree-client
+    git pull
+    cd ..
+else
+    git clone http://github.com/migasfree/migasfree-client.git
+fi
+
+if [ -d migasfree-sdk ]
+then
+    cd migasfree-sdk
+    git pull
+    cd ..
+else
+    git clone http://github.com/migasfree/migasfree-sdk.git
+fi
+
+popd
 cd test-apt
 bash test-clients.sh
 cd ..

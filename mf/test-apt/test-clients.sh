@@ -14,11 +14,6 @@ function mac_random {
 }
 
 
-cd ../data
-docker build -t api-migasfree .
-cd -
-
-
 _SERVER=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | cut -d ' ' -f 1)
 if [ "$PWD_HOST_FQDN" = "labs.play-with-docker.com" ]
 then
@@ -34,13 +29,6 @@ do
   _LOG="logs/$_PROJECT.log"
   rm $_LOG > /dev/null || :
 
-  _DIST=$(echo $_PROJECT| tr ':' '-')
-
-  # PACKAGE BUILD (migasfree-client)
-  docker build -t build-client-$_PROJECT  -f Dockerfile/$_PROJECT .
-  docker run --rm -ti -v $_PATH_PKGS/$_DIST:/dist build-client-$_PROJECT
-
-
   docker run -ti \
     --mac-address $(mac_project $_PROJECT) \
     -e MIGASFREE_CLIENT_SERVER=$_SERVER \
@@ -51,80 +39,157 @@ do
     -e MIGASFREE_PACKAGER_VERSION=$_PROJECT \
     -e MIGASFREE_PACKAGER_STORE=org \
     -e USER=root \
-    -v $_PATH_PKGS/$_DIST:/dist \
-    -v "/tmp/migasfree-client:/tmp/migasfree-client" \
+    -v $_PATH_PKGS:$_PATH_PKGS \
+    -v "${PWD}/../test.py:/test.py" \
     --name client-test \
     $_PROJECT \
     bash -c "
-        cd dist
-        apt-get -y update
-        dpkg -i  *.deb
-        apt-get -y install -f
 
-        migasfree -u
-        migasfree-upload -f /dist/*.deb
+	export MIGASFREE_CLIENT_MANAGE_DEVICES='False'
 
-    " | tee -a $_LOG
+        _DIST=$(echo $_PROJECT| tr ':' '-')
+	mkdir -p $_PATH_PKGS/\$_DIST/
+	
+	# Depends 
+	apt-get update	
+        if [ $_PROJECT = ubuntu:precise ]
+        then
+	    apt-get -y install python-setuptools python python-stdeb
+        else
+	    apt-get -y install python-setuptools python-stdeb dh-python python-requests 
+	fi
 
 
-  docker commit client-test client-test-img
-
-  docker run -ti --rm \
-    -e MIGASFREE_CLIENT_SERVER=$_SERVER \
-    -e MIGASFREE_CLIENT_PROJECT=$_PROJECT \
-    api-migasfree bash -c "
+        # migasfree-client
         cd /
-        /usr/bin/python data.py
-    " | tee -a $_LOG
+	cp -r $_PATH_PKGS/migasfree-client .
+	cd /migasfree-client/bin
+	./create-package
+        cp /migasfree-client/deb_dist/*.deb $_PATH_PKGS/\$_DIST/
+	dpkg -i /migasfree-client/deb_dist/*.deb
+	apt-get -y install -f
+	cd -  
+
+        # migasfree-sdk
+	cp -r $_PATH_PKGS/migasfree-sdk .
+	cd migasfree-sdk
+	python setup.py --command-packages=stdeb.command bdist_deb
+	cp /migasfree-sdk/deb_dist/*.deb $_PATH_PKGS/\$_DIST/
+        dpkg -i /migasfree-sdk/deb_dist/*.deb
+	cd -
 
 
-  docker run -ti --rm \
-    --mac-address $(mac_project $_PROJECT) \
-    -v $_PATH_PKGS:$_PATH_PKGS \
-    -v "/tmp/migasfree-client:/tmp/migasfree-client" \
-    client-test-img \
-    bash -c "
-        migasfree -u
-        apt-get -y purge migasfree-client
-        apt-get -y install migasfree-client
-        migasfree -u
-
-       dpkg -l | grep migasfree-client
-       if [ \$? = 0 ]
-       then
-           echo 'OK    $_PROJECT internal deployment (install migasfree-client)' >> $_PATH_PKGS/data.log
-       else
-           echo 'ERROR $_PROJECT internal deployment (install migasfree-client)' >> $_PATH_PKGS/data.log
-       fi
-    " | tee -a $_LOG
+	migasfree -u
+	migasfree-upload -f /migasfree-client/deb_dist/*.deb
 
 
-  docker run -ti --rm \
-    --mac-address $(mac_project $_PROJECT) \
-    -v $_PATH_PKGS:$_PATH_PKGS \
-    -v "/tmp/migasfree-client:/tmp/migasfree-client" \
-    client-test-img \
-    bash -c "
-        rm -rf /etc/apt/sources.list
-        apt-get clean
-        migasfree -u
-        apt-get install nano
-
-        cat /etc/apt/sources.list.d/migasfree.list
-
-       dpkg -l | grep nano
-       if [ \$? = 0 ]
-       then
-           echo 'OK    $_PROJECT external deployment (install nano)' >> $_PATH_PKGS/data.log
-       else
-           echo 'ERROR $_PROJECT external deployment (install nano)' >> $_PATH_PKGS/data.log
-       fi
-       echo
-    " | tee -a $_LOG
+	echo >> $_PATH_PKGS/data.log
+        echo $_PROJECT >> $_PATH_PKGS/data.log
 
 
-    docker rmi -f client-test-img
-    docker rm -f client-test
+
+        if [ $_PROJECT = ubuntu:precise ]
+        then
+
+	    # CHECK migasfree-client PACKAGE
+            # ==============================
+	    if [ -f /migasfree-client/deb_dist/migasfree-client*.deb ]
+	    then
+	        echo '    OK    BUILD migasfree-client' >> $_PATH_PKGS/data.log
+	    else
+	        echo '    ERROR BUILD migasfree-client' >> $_PATH_PKGS/data.log	
+	    fi
+	    
+	    echo '    OK    impossible continue: old python-request package' >> $_PATH_PKGS/data.log
+	    exit 0
+	fi
+
+
+
+        # TOKEN admin
+	python -c 'from test import save_token;save_token()'
+
+        # Deployment internal
+	python -c 'from test import createDeploymentInternalMigasfreeClient;createDeploymentInternalMigasfreeClient()'
+
+        # Deployment external
+	python -c 'from test import createDeploymenExternalBase;createDeploymenExternalBase()'
+
+	migasfree -u	
+
+
+	# CHECK migasfree-client PACKAGE
+        # ==============================
+	if [ -f /migasfree-client/deb_dist/migasfree-client*.deb ]
+	then
+	    echo '    OK    BUILD migasfree-client' >> $_PATH_PKGS/data.log
+	else
+	    echo '    ERROR BUILD migasfree-client' >> $_PATH_PKGS/data.log	
+	fi
+
+	# CHECK migasfree-sdk PACKAGE
+        # ===========================
+	if [ -f /migasfree-sdk/deb_dist/migasfree-sdk*.deb ]
+	then
+	    echo '    OK    BUILD migasfree-sdk' >> $_PATH_PKGS/data.log
+	else
+	    echo '    ERROR BUILD migasfree-sdk' >> $_PATH_PKGS/data.log	
+	fi
+
+
+	# CHECK SYNCHRONIZATION
+        # =====================
+	_R=\$(python -c 'from test import checkSync;checkSync()')
+	echo \"    \$_R\" >> $_PATH_PKGS/data.log
+
+
+
+	# CHECK HARDWARE
+        # ==============
+	_R=\$(python -c 'from test import checkHW;checkHW()')
+	echo \"    \$_R\" >> $_PATH_PKGS/data.log
+
+
+        # CHECK INTERNAL DEPLOYMENT
+        # =========================
+	apt-get -y purge migasfree-client
+	apt-get -y install migasfree-client
+	migasfree -u
+	dpkg -l | grep migasfree-client
+	if [ \$? = 0 ]
+	then
+	    echo '    OK    internal deployment (install migasfree-client)' >> $_PATH_PKGS/data.log
+	else
+	    echo '    ERROR internal deployment (install migasfree-client)' >> $_PATH_PKGS/data.log
+	fi
+
+
+	# CHECK EXTERNAL DEPLOYMENT
+        # =========================
+	rm -rf /etc/apt/sources.list
+	apt-get clean
+	migasfree -u
+	apt-get install nano
+	dpkg -l | grep nano
+	if [ \$? = 0 ]
+	then
+	   echo '    OK    external deployment (install nano)' >> $_PATH_PKGS/data.log
+	else
+	   echo '    ERROR external deployment (install nano)' >> $_PATH_PKGS/data.log
+	fi
+	echo
+
+
+	# CHECK ERRORS NUMBER
+        # ===================
+	_R=\$(python -c 'from test import checkErrors;checkErrors()')
+	echo \"\$_R\" >> $_PATH_PKGS/data.log
+	
+
+   " | tee -a $_LOG
+
+
+    docker rm -f client-test > /dev/null
 
 done
 
