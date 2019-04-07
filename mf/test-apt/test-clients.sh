@@ -23,9 +23,11 @@ fi
 
 mkdir -p logs
 
-for _PROJECT in $(cat projects)
+for _CONTAINER in $(cat projects)
 do
-  
+
+  _PROJECT=$(echo $_CONTAINER| tr '/' '-')
+
   _LOG="logs/$_PROJECT.log"
   rm $_LOG > /dev/null || :
 
@@ -42,151 +44,151 @@ do
     -v $_PATH_PKGS:$_PATH_PKGS \
     -v "${PWD}/../test.py:/test.py" \
     --name client-test \
-    $_PROJECT \
+    $_CONTAINER \
     bash -c "
 
-	export MIGASFREE_CLIENT_MANAGE_DEVICES='False'
+    export MIGASFREE_CLIENT_MANAGE_DEVICES='False'
 
-        _DIST=$(echo $_PROJECT| tr ':' '-')
-	mkdir -p $_PATH_PKGS/\$_DIST/
-	
-	# Depends 
-	apt-get update	
-        if [ $_PROJECT = ubuntu:precise ]
-        then
-	    apt-get -y install python-setuptools python python-stdeb
-        else
-	    apt-get -y install python-setuptools python-stdeb dh-python python-requests 
-	fi
+    _DIST=$(echo $_PROJECT| tr ':' '-')
+    mkdir -p $_PATH_PKGS/\$_DIST/
 
-
-        # migasfree-client
-        cd /
-	cp -r $_PATH_PKGS/migasfree-client .
-	cd /migasfree-client/bin
-	./create-package
-        cp /migasfree-client/deb_dist/*.deb $_PATH_PKGS/\$_DIST/
-	dpkg -i /migasfree-client/deb_dist/*.deb
-	apt-get -y install -f
-	cd -  
-
-        # migasfree-sdk
-	cp -r $_PATH_PKGS/migasfree-sdk .
-	cd migasfree-sdk
-	python setup.py --command-packages=stdeb.command bdist_deb
-	cp /migasfree-sdk/deb_dist/*.deb $_PATH_PKGS/\$_DIST/
-        dpkg -i /migasfree-sdk/deb_dist/*.deb
-	cd -
+    # Depends
+    apt-get update
+    if [ $_PROJECT = ubuntu:precise ]
+    then
+        apt-get -y install python-setuptools python python-stdeb
+    else
+        apt-get -y install python-setuptools python-stdeb dh-python python-requests
+    fi
 
 
-	migasfree -u
-	migasfree-upload -f /migasfree-client/deb_dist/*.deb
+    # migasfree-client
+    cd /
+    cp -r $_PATH_PKGS/migasfree-client .
+    cd /migasfree-client/bin
+    ./create-package
+    cp /migasfree-client/deb_dist/*.deb $_PATH_PKGS/\$_DIST/
+    dpkg -i /migasfree-client/deb_dist/*.deb
+    apt-get -y install -f
+    cd -
+
+    # migasfree-sdk
+    cp -r $_PATH_PKGS/migasfree-sdk .
+    cd migasfree-sdk
+    python setup.py --command-packages=stdeb.command bdist_deb
+    cp /migasfree-sdk/deb_dist/*.deb $_PATH_PKGS/\$_DIST/
+    dpkg -i /migasfree-sdk/deb_dist/*.deb
+    cd -
 
 
-	echo >> $_PATH_PKGS/data.log
-        echo $_PROJECT >> $_PATH_PKGS/data.log
+    migasfree -u
+    migasfree-upload -f /migasfree-client/deb_dist/*.deb
 
 
-
-        if [ $_PROJECT = ubuntu:precise ]
-        then
-
-	    # CHECK migasfree-client PACKAGE
-            # ==============================
-	    if [ -f /migasfree-client/deb_dist/migasfree-client*.deb ]
-	    then
-	        echo '    OK    BUILD migasfree-client' >> $_PATH_PKGS/data.log
-	    else
-	        echo '    ERROR BUILD migasfree-client' >> $_PATH_PKGS/data.log	
-	    fi
-	    
-	    echo '    OK    impossible continue: old python-request package' >> $_PATH_PKGS/data.log
-	    exit 0
-	fi
+    echo >> $_PATH_PKGS/data.log
+    echo $_PROJECT >> $_PATH_PKGS/data.log
 
 
 
-        # TOKEN admin
-	python -c 'from test import save_token;save_token()'
+    if [ $_PROJECT = ubuntu:precise ]
+    then
 
-        # Deployment internal
-	python -c 'from test import createDeploymentInternalMigasfreeClient;createDeploymentInternalMigasfreeClient()'
-
-        # Deployment external
-	python -c 'from test import createDeploymenExternalBase;createDeploymenExternalBase()'
-
-	migasfree -u	
-
-
-	# CHECK migasfree-client PACKAGE
+        # CHECK migasfree-client PACKAGE
         # ==============================
-	if [ -f /migasfree-client/deb_dist/migasfree-client*.deb ]
-	then
-	    echo '    OK    BUILD migasfree-client' >> $_PATH_PKGS/data.log
-	else
-	    echo '    ERROR BUILD migasfree-client' >> $_PATH_PKGS/data.log	
-	fi
+        if [ -f /migasfree-client/deb_dist/migasfree-client*.deb ]
+        then
+            echo '    OK    BUILD migasfree-client' >> $_PATH_PKGS/data.log
+        else
+            echo '    ERROR BUILD migasfree-client' >> $_PATH_PKGS/data.log
+        fi
 
-	# CHECK migasfree-sdk PACKAGE
-        # ===========================
-	if [ -f /migasfree-sdk/deb_dist/migasfree-sdk*.deb ]
-	then
-	    echo '    OK    BUILD migasfree-sdk' >> $_PATH_PKGS/data.log
-	else
-	    echo '    ERROR BUILD migasfree-sdk' >> $_PATH_PKGS/data.log	
-	fi
-
-
-	# CHECK SYNCHRONIZATION
-        # =====================
-	_R=\$(python -c 'from test import checkSync;checkSync()')
-	echo \"    \$_R\" >> $_PATH_PKGS/data.log
+        echo '    OK    impossible continue: old python-request package' >> $_PATH_PKGS/data.log
+        exit 0
+    fi
 
 
 
-	# CHECK HARDWARE
-        # ==============
-	_R=\$(python -c 'from test import checkHW;checkHW()')
-	echo \"    \$_R\" >> $_PATH_PKGS/data.log
+    # TOKEN admin
+    python -c 'from test import save_token;save_token()'
+
+    # Deployment internal
+    python -c 'from test import createDeploymentInternalMigasfreeClient;createDeploymentInternalMigasfreeClient()'
+
+    # Deployment external
+    python -c 'from test import createDeploymenExternalBase;createDeploymenExternalBase()'
+
+    migasfree -u
 
 
-        # CHECK INTERNAL DEPLOYMENT
-        # =========================
-	apt-get -y purge migasfree-client
-	apt-get -y install migasfree-client
-	migasfree -u
-	dpkg -l | grep migasfree-client
-	if [ \$? = 0 ]
-	then
-	    echo '    OK    internal deployment (install migasfree-client)' >> $_PATH_PKGS/data.log
-	else
-	    echo '    ERROR internal deployment (install migasfree-client)' >> $_PATH_PKGS/data.log
-	fi
+    # CHECK migasfree-client PACKAGE
+    # ==============================
+    if [ -f /migasfree-client/deb_dist/migasfree-client*.deb ]
+    then
+        echo '    OK    BUILD migasfree-client' >> $_PATH_PKGS/data.log
+    else
+        echo '    ERROR BUILD migasfree-client' >> $_PATH_PKGS/data.log
+    fi
+
+    # CHECK migasfree-sdk PACKAGE
+    # ===========================
+    if [ -f /migasfree-sdk/deb_dist/migasfree-sdk*.deb ]
+    then
+        echo '    OK    BUILD migasfree-sdk' >> $_PATH_PKGS/data.log
+    else
+        echo '    ERROR BUILD migasfree-sdk' >> $_PATH_PKGS/data.log
+    fi
 
 
-	# CHECK EXTERNAL DEPLOYMENT
-        # =========================
-	rm -rf /etc/apt/sources.list
-	apt-get clean
-	migasfree -u
-	apt-get install nano
-	dpkg -l | grep nano
-	if [ \$? = 0 ]
-	then
-	   echo '    OK    external deployment (install nano)' >> $_PATH_PKGS/data.log
-	else
-	   echo '    ERROR external deployment (install nano)' >> $_PATH_PKGS/data.log
-	fi
-	echo
+    # CHECK SYNCHRONIZATION
+    # =====================
+    _R=\$(python -c 'from test import checkSync;checkSync()')
+    echo \"    \$_R\" >> $_PATH_PKGS/data.log
 
 
-	# CHECK ERRORS NUMBER
-        # ===================
-	_R=\$(python -c 'from test import checkErrors;checkErrors()')
-	echo \"\$_R\" >> $_PATH_PKGS/data.log
-	
 
-   " | tee -a $_LOG
+    # CHECK HARDWARE
+    # ==============
+    _R=\$(python -c 'from test import checkHW;checkHW()')
+    echo \"    \$_R\" >> $_PATH_PKGS/data.log
+
+
+    # CHECK INTERNAL DEPLOYMENT
+    # =========================
+    apt-get -y purge migasfree-client
+    apt-get -y install migasfree-client
+    migasfree -u
+    dpkg -l | grep migasfree-client
+    if [ \$? = 0 ]
+    then
+        echo '    OK    internal deployment (install migasfree-client)' >> $_PATH_PKGS/data.log
+    else
+        echo '    ERROR internal deployment (install migasfree-client)' >> $_PATH_PKGS/data.log
+    fi
+
+
+    # CHECK EXTERNAL DEPLOYMENT
+    # =========================
+    rm -rf /etc/apt/sources.list
+    apt-get clean
+    migasfree -u
+    apt-get install nano
+    dpkg -l | grep nano
+    if [ \$? = 0 ]
+    then
+       echo '    OK    external deployment (install nano)' >> $_PATH_PKGS/data.log
+    else
+       echo '    ERROR external deployment (install nano)' >> $_PATH_PKGS/data.log
+    fi
+    echo
+
+
+    # CHECK ERRORS NUMBER
+    # ===================
+    _R=\$(python -c 'from test import checkErrors;checkErrors()')
+    echo \"    \$_R\" >> $_PATH_PKGS/data.log
+
+
+        " | tee -a $_LOG
 
 
     docker rm -f client-test > /dev/null
