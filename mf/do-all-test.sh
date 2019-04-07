@@ -2,8 +2,7 @@
 . variables
 
 MIGASFREE_VERSION_DB=0.5
-#MIGASFREE_VERSION=master
-MIGASFREE_VERSION=4.17.rc1
+MIGASFREE_VERSION=master
 
 _SERVER=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | cut -d ' ' -f 1)
 
@@ -49,10 +48,10 @@ cd ../images/server/
 make build
 cd ../../mf
 docker-compose up -d
-
-
 wait_nginx
-
+echo 'DEBUG=True' >> /var/lib/migasfree/$FQDN/conf/settings.py
+docker-compose restart
+wait_nginx
 echo
 rm /var/migasfree/dist/data.log || :
 
