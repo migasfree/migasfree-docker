@@ -120,15 +120,10 @@ def createDeploymenExternalBase():
         data["suite"] = project.split(":")[1]
         data["components"] = "Everything/x86_64/os"
         data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch"
-    elif project.startswith("opensuse:"):
+    elif project.startswith("opensuse-leap:"):
         data["base_url"] = "http://download.opensuse.org/distribution/leap"
         data["suite"] = project.split(":")[1]
         data["components"] = "repo/oss/suse"
-        data["options"] = ""
-    elif project.startswith("opensuse/leap:"):
-        data["base_url"] = "http://download.opensuse.org/distribution/leap"
-        data["suite"] = project.split(":")[1]
-        data["components"] = "repo/oss"
         data["options"] = ""
     else:
         return
@@ -239,10 +234,13 @@ def checkErrors():
     server=os.environ["MIGASFREE_CLIENT_SERVER"]
     user=os.environ["MIGASFREE_PACKAGER_USER"]
     api = ApiToken(server=server, user=user)
-
+    cid=get_cid()
+    i=0
     try:
-        errors = api.filter("errors",{"computer__id": get_cid()})
+        errors = api.filter("errors",{"computer__id": cid})
         for e in errors:
-            print "          ERROR ", e["description"].replace("\n","\n          ")
+            i += 1
+        if i>0:
+            print "ERROR ({}): http://{}/admin/server/error/?computer__id__exact={}".format(i, server, cid)
     except:
         print "ERROR ? errors in synchronization"
