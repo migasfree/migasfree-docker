@@ -56,11 +56,11 @@ do
     apt-get update
     if [ $_PROJECT = ubuntu:precise ]
     then
-        apt-get -y install python-setuptools python python-stdeb
+        apt-get -y install python-setuptools python python-stdeb python-netifaces
     else
-        apt-get -y install python-setuptools python-stdeb dh-python python-requests
+        apt-get -y install python-setuptools python-stdeb dh-python python-netifaces python-requests
     fi
-
+    apt-get -y install python-distro || 0
 
     # migasfree-client
     cd /

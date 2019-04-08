@@ -54,7 +54,8 @@ do
 
     # Depends
     zypper update -y
-    zypper install -y python-setuptools  rpm-build gettext python-requests
+    zypper install -y python-setuptools  rpm-build gettext python-netifaces python-requests
+    zypper install -y python-distro || :
 
     # migasfree-client
     cd /

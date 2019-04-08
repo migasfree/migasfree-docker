@@ -61,7 +61,8 @@ do
 
     # Depends
     yum -y update
-    yum -y install python-setuptools  rpm-build gettext python-requests
+    yum -y install python-setuptools  rpm-build gettext python-netifaces python-requests
+    yum -y install python-distro || :
 
     # migasfree-client
     cd /
