@@ -116,15 +116,27 @@ def createDeploymenExternalBase():
         data["components"] = "os/x86_64 updates/x86_64 extras/x86_64"
         data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-$releasever"
     elif project.startswith("fedora:"):
-        data["base_url"] = "http://download.fedoraproject.org/pub/fedora/linux/releases"
-        data["suite"] = project.split(":")[1]
-        data["components"] = "Everything/x86_64/os"
-        data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch"
+        if project.split(":")[1] == "30":
+            data["base_url"] = "http://download.fedoraproject.org/pub/fedora/linux/releases/test/"
+            data["suite"] = "{}_Beta".format(project.split(":")[1])
+            data["components"] = "Everything/x86_64/os"
+            data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch"
+        else:
+            data["base_url"] = "http://download.fedoraproject.org/pub/fedora/linux/releases"
+            data["suite"] = project.split(":")[1]
+            data["components"] = "Everything/x86_64/os"
+            data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch"
     elif project.startswith("opensuse-leap:"):
-        data["base_url"] = "http://download.opensuse.org/distribution/leap"
-        data["suite"] = project.split(":")[1]
-        data["components"] = "repo/oss/suse"
-        data["options"] = ""
+        if project.split(":")[1] == "42.3":
+            data["base_url"] = "http://download.opensuse.org/distribution/leap"
+            data["suite"] = project.split(":")[1]
+            data["components"] = "repo/oss/suse"
+            data["options"] = ""
+        else:
+            data["base_url"] = "http://download.opensuse.org/distribution/leap"
+            data["suite"] = project.split(":")[1]
+            data["components"] = "repo/oss"
+            data["options"] = ""
     else:
         return
 

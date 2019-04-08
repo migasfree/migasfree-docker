@@ -50,7 +50,7 @@ cd ../../mf
 docker-compose up -d
 wait_nginx
 echo 'DEBUG=True' >> /var/lib/migasfree/$FQDN/conf/settings.py
-docker-compose restart
+docker restart $FQDN-server
 wait_nginx
 echo
 rm /var/migasfree/dist/data.log || :
