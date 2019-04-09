@@ -1,7 +1,6 @@
 #!/bin/bash
 
 _MAC_PREFIX="02:42:ac"  # DOCKER
-_PATH_PKGS=/var/migasfree/dist
 
 function mac_project {
   _PROJECT="$1"

@@ -4,6 +4,9 @@
 MIGASFREE_VERSION_DB=0.5
 MIGASFREE_VERSION=master
 
+export _PATH_PKGS=/var/migasfree/dist
+mkdir -p $_PATH_PKGS
+
 _SERVER=$(ip route get 8.8.8.8| grep src| sed 's/.*src \(.*\)$/\1/g' | cut -d ' ' -f 1)
 
 if [ "$PWD_HOST_FQDN" = "labs.play-with-docker.com" ]
@@ -53,9 +56,9 @@ echo 'DEBUG=True' >> /var/lib/migasfree/$FQDN/conf/settings.py
 docker restart $FQDN-server
 wait_nginx
 echo
-rm /var/migasfree/dist/data.log || :
+rm $_PATH_PKGS/data.log || :
 
-pushd /var/migasfree/dist/
+pushd $_PATH_PKGS
 
 if [ -d migasfree-client ]
 then
