@@ -5,6 +5,8 @@ server:
     - FQDN=${FQDN}
     - TZ=${TZ}
     - POSTGRES_PORT=${POSTGRES_PORT}
+    - http_proxy=${http_proxy}
+    - https_proxy=${https_proxy}
   restart: always
   links:
   - db

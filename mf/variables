@@ -23,3 +23,6 @@ export POSTGRES_CRON="00 00 * * *"
 export POSTGRES_ALLOW_HOSTS=""
 
 export TZ=Europe/Madrid
+
+export http_proxy=
+export https_proxy=
