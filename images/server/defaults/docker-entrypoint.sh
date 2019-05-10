@@ -42,7 +42,7 @@ _CONFIG_NGINX = """
 server {
     listen 80;
     server_name $FQDN $HOST localhost 127.0.0.1;
-    client_max_body_size 500M;
+    client_max_body_size 1024M;
 
 
     # STATIC
