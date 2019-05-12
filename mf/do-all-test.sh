@@ -1,7 +1,6 @@
 #!/bin/bash
 . variables
 
-MIGASFREE_VERSION_DB=0.5
 MIGASFREE_VERSION=master
 
 export _PATH_PKGS=/var/migasfree/dist
