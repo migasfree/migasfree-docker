@@ -16,6 +16,7 @@ server:
     - "/var/lib/migasfree/${FQDN}/conf:/etc/migasfree-server"
     - "/var/lib/migasfree/${FQDN}/public:/var/migasfree/repo"
     - "/var/lib/migasfree/${FQDN}/keys:/usr/share/migasfree-server"
+#    - "/usr/share/ca-certificates/192.168.1.201.crt:/usr/share/ca-certificates/192.168.1.201.crt"
 
 db:
   image: migasfree/db:${MIGASFREE_VERSION_DB}

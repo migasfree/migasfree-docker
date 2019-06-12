@@ -266,6 +266,7 @@ function wait_nginx {
 
 
 set_TZ
+update-ca-certificates
 migasfree_init
 
 echo "Starting circus"
