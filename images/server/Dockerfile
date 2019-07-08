@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM debian:buster
 MAINTAINER Alberto Gacías <alberto@migasfree.org>
 
 COPY VERSION /VERSION
