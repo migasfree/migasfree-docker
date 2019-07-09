@@ -116,9 +116,7 @@ target = open('/etc/nginx/sites-available/migasfree.conf', 'w')
 target.write(_CONFIG_NGINX)
 target.close()
 EOF
-ln -sf  /etc/nginx/sites-available/migasfree.conf  /etc/nginx/sites-enabled/migasfree.conf
-rm /etc/nginx/sites-available/default &> /dev/null || :
-rm /etc/nginx/sites-enabled/default &> /dev/null || :
+ln -sf /etc/nginx/sites-available/migasfree.conf /etc/nginx/sites-enabled/default
 }
 
 function set_nginx_server_permissions()
