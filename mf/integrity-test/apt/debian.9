@@ -1,0 +1,22 @@
+FROM debian:stretch
+
+ENV _SUITE="stretch" \
+    TERM=xterm \
+    DEBIAN_FRONTEND=noninteractive \
+    _PYTHON_BIN=/usr/bin/python2 \
+    _CLIENT_DEPENDS='python-stdeb dh-python python-netifaces' \
+    _SDK_DEPENDS='python-requests dialog' \
+    _PLAY_DEPENDS='devscripts wget' 
+
+
+RUN apt-get update && \
+    apt-get install -y $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS
+
+# WORKAROUND: install npm (required by migasfree.play)
+RUN wget https://deb.nodesource.com/setup_10.x && \
+         bash setup_10.x    && \
+         apt-get install -y nodejs
+
+COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh
+
+CMD ["/bin/bash", "/docker-entrypoint.sh"]

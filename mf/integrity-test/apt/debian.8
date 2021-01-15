@@ -1,0 +1,16 @@
+FROM debian:jessie
+
+ENV _SUITE="jessie" \
+    TERM=xterm \
+    DEBIAN_FRONTEND=noninteractive \
+    _PYTHON_BIN=/usr/bin/python2 \
+    _CLIENT_DEPENDS='python-stdeb dh-python python-netifaces' \
+    _SDK_DEPENDS='python-requests dialog' \
+    _PLAY_DEPENDS='devscripts npm wget' 
+
+RUN apt-get update && \
+    apt-get install -y $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS
+
+COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh
+
+CMD ["/bin/bash", "/docker-entrypoint.sh"]

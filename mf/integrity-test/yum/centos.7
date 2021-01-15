@@ -1,0 +1,23 @@
+FROM centos:7
+
+ENV _SUITE="7" \
+    USER=root \
+    _USERBUILD="userbuild" \
+    _BUILD_DEPENDS='rpm-build.x86_64 gettext.x86_64 which make' \
+    _PYTHON_BIN='/usr/bin/python2' \
+    _CLIENT_DEPENDS='python-netifaces' \
+    _SDK_DEPENDS='python-requests dialog' \
+    _PLAY_DEPENDS='npm wget' \
+    _OTHERS='pciutils.x86_64'
+
+RUN yum -y update && \
+    yum -y install epel-release && \
+    yum -y install $_BUILD_DEPENDS $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS $_OTHERS
+
+RUN useradd -m $_USERBUILD
+RUN su -c "mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}"  $_USERBUILD
+RUN su -c "echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros" $_USERBUILD
+
+COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh
+
+CMD ["/bin/bash", "/docker-entrypoint.sh"]

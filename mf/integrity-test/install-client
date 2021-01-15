@@ -1,0 +1,102 @@
+# To install migasfree-client execute:
+#    wget -O - http://migasfree.org/pub/install-client | bash
+
+_DISTRO="$1"  # "centos.8", "ubuntu.20", ...  (visit http://migasfree.org/pub/ )
+_PYTHON_BIN=$(which python3 || which python2)
+_PKG="migasfree-client"
+
+if  [ -z "$_DISTRO" ];
+then
+    _DISTRO=$($_PYTHON_BIN - << EOF
+import re
+import platform
+
+def slugify(s):
+    s = s.lower()
+    for c in [' ', '-', '.', '/']:
+        s = s.replace(c, '_')
+    s = re.sub('\W', '', s)
+    s = s.replace('_', ' ')
+    s = re.sub('\s+', ' ', s)
+    s = s.strip()
+    s = s.replace(' ', '-')
+    return s
+
+def get_distro_name():
+    try:
+        import distro
+        name = distro.name()
+    except ImportError:
+        name = platform.linux_distribution()[0]
+    return slugify(name.strip().split()[0])
+
+def get_distro_major_version():
+    try:
+        import distro
+        major_version = distro.version()
+    except ImportError:
+        major_version = platform.linux_distribution()[1]
+    return major_version.strip().split('.')[0]
+
+if get_distro_name()=="opensuse":
+    import distro
+    print("%s.%s.%s" % (get_distro_name(), distro.major_version(),distro.minor_version()))
+else:
+    print("%s.%s" % (get_distro_name(), get_distro_major_version()))
+EOF
+)
+fi
+
+
+_ID=$(echo $_DISTRO | awk -F. '{print $1}')
+
+if [ -z "$_DISTRO" ] ;
+then
+    echo "python3-distro (or python-distro) package is required. Please, install it."
+    exit
+fi
+
+
+case $_ID in
+    debian|ubuntu) 
+        wget -O - http://migasfree.org/pub/gpg_key | apt-key add -
+        echo "deb http://migasfree.org/pub/$_DISTRO/REPOSITORIES migasfree PKGS" > /etc/apt/sources.list.d/migasfree.list
+        apt-get update
+        apt-get -y install --no-install-recommends "$_PKG"
+        ;;
+    centos|fedora)
+        cat <<EOF >> /etc/yum.repos.d/migasfree.repo
+[REPO-migasfree]
+name=REPO-migasfree
+baseurl=http://migasfree.org/pub/$_DISTRO/REPOSITORIES/migasfree
+enabled=1
+http_caching=none
+repo_gpgcheck=1
+gpgcheck=0
+gpgkey=http://migasfree.org/pub/gpg_key
+EOF
+        yum -y update
+        yum -y install "$_PKG"
+        ;;
+    opensuse)
+        cat <<EOF >> /etc/zypp/repos.d/migasfree.repo
+[REPO-migasfree]
+name=REPO-migasfree
+baseurl=http://migasfree.org/pub/$_DISTRO/REPOSITORIES/migasfree
+enabled=1
+http_caching=none
+repo_gpgcheck=1
+gpgcheck=0
+gpgkey=http://migasfree.org/pub/gpg_key
+EOF
+        zypper -n --gpg-auto-import-keys update 
+        zypper -n install "$_PKG"
+        ;;
+    *)  
+        echo Error: Packages for $_DISTRO not found. 
+        echo "Please, visit http://migasfree.org/pub for compatibility,"
+        echo "specify your base distro and run as follows:"
+        echo "wget http://migasfree.org/pub/install-client"
+        echo "bash install-client <mydistrobase>   # e.g bash install-client 'ubuntu.20'"    
+        ;;
+esac

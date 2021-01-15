@@ -1,0 +1,43 @@
+FROM centos:6
+
+ENV _SUITE="6.10" \
+    USER=root \
+    _USERBUILD="userbuild" \
+    _BUILD_DEPENDS='rpm-build.x86_64 gettext.x86_64 make' \
+    _PYTHON_BIN='/usr/bin/python2' \
+    _CLIENT_DEPENDS='python-netifaces' \
+    _SDK_DEPENDS='python-requests dialog' \
+    _PLAY_DEPENDS='npm wget' \
+    _OTHERS='pciutils.x86_64 wget'
+
+# WORKAROUND: repository base
+# https://tweenpath.net/fix-centos-5-6-error-yumrepo-error-mirror-urls-ftp-https-file/
+RUN echo "[base]" >  /etc/yum.repos.d/CentOS-Base.repo && \
+          echo "name=CentOS-6.10-Base" >>  /etc/yum.repos.d/CentOS-Base.repo && \
+          echo "baseurl=http://vault.centos.org/6.10/os/x86_64" >>  /etc/yum.repos.d/CentOS-Base.repo && \
+          echo "gpgcheck=1" >>  /etc/yum.repos.d/CentOS-Base.repo && \
+          echo "gpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-6" >>  /etc/yum.repos.d/CentOS-Base.repo && \
+          echo "exclude=redhat-logos" >>  /etc/yum.repos.d/CentOS-Base.repo && \
+          cat /etc/yum.repos.d/CentOS-Base.repo && \
+          yum clean all 
+
+
+
+# WORKAROUND: repository  EPEL
+RUN yum -y update && \ 
+    yum -y install wget && \
+    wget https://archives.fedoraproject.org/pub/archive/epel/6/x86_64/epel-release-6-8.noarch.rpm && \
+    yum -y install /epel-release*.rpm
+
+RUN yum -y update && \
+    yum -y install $_BUILD_DEPENDS $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS $_OTHERS
+
+
+RUN useradd -m $_USERBUILD
+RUN su -c "mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}"  $_USERBUILD
+RUN su -c "echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros" $_USERBUILD
+
+COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh
+
+CMD ["/bin/bash", "/docker-entrypoint.sh"]
+

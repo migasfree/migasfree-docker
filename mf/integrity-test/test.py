@@ -17,9 +17,9 @@ user = os.environ["MIGASFREE_PACKAGER_USER"]
 password = os.environ["MIGASFREE_PACKAGER_PASSWORD"]
 
 
-def createDeploymentInternalMigasfreeClient():
+def createDeploymentInternalMigasfree():
     """
-    Creates a repository named "migasfree client"
+    Creates a repository named "migasfree"
     """
 
     server = os.environ["MIGASFREE_CLIENT_SERVER"]
@@ -29,12 +29,10 @@ def createDeploymentInternalMigasfreeClient():
     api = ApiToken(server=server, user=user)
 
     project_id = api.id("projects", {"name": project})
+    packages_ids=[]
 
-    # get migasfree client package id
     for package in api.filter("packages", {"project__id": project_id}):
-        if "migasfree-client" in package["name"]:
-            package_id = package["id"]
-            break
+        packages_ids.append(package["id"])
 
     all_systems_id = api.id(
         "attributes",
@@ -47,12 +45,12 @@ def createDeploymentInternalMigasfreeClient():
 
     # INTERNAL DEPLOYMENT migasfree-client
     data = {
-        "name": "migasfree client",
+        "name": "migasfree",
         "packages_to_install": ["migasfree-client"],
         "start_date": today,
         "project": project_id,
         "included_attributes": [all_systems_id],
-        "available_packages": [package_id]
+        "available_packages": packages_ids
     }
 
     deployment_id = api.post("deployments/internal-sources", data)
@@ -61,7 +59,7 @@ def createDeploymentInternalMigasfreeClient():
         #print "deployment_id", deployment_id
         pass
     else:
-        print """ERROR: creating internal deployment:
+        print("""ERROR: creating internal deployment:
 *******************************************************
 Status: %s
 Reason: %s
@@ -70,7 +68,7 @@ Content: %s
     deployment_id.status_code,
     deployment_id.reason,
     "deployment_id._content")
-
+       )
 
 def createDeploymenExternalBase():
     """
@@ -80,6 +78,7 @@ def createDeploymenExternalBase():
     server = os.environ["MIGASFREE_CLIENT_SERVER"]
     project = os.environ["MIGASFREE_CLIENT_PROJECT"]
     user = os.environ["MIGASFREE_PACKAGER_USER"]
+    suite = os.environ["_SUITE"]
 
     api = ApiToken(server=server, user=user)
     project_id = api.id("projects", {"name": project})
@@ -100,41 +99,54 @@ def createDeploymenExternalBase():
     }
 
 
-    if project.startswith("debian"):
+    if project.startswith("debian."):
         data["base_url"] = " http://ftp.es.debian.org/debian"
-        data["suite"] = project.split(":")[1]
+        data["suite"] = suite
         data["components"] = "main"
         data["options"] = "[arch=amd64]"
-    elif project.startswith("ubuntu:"):
+    elif project.startswith("ubuntu."):
         data["base_url"] = "http://es.archive.ubuntu.com/ubuntu"
-        data["suite"] = project.split(":")[1]
+        data["suite"] = suite
         data["components"] = "main universe multiverse"
         data["options"] = "[arch=amd64]"
-    elif project.startswith("centos:"):
-        data["base_url"] = "http://mirror.centos.org/centos"
-        data["suite"] = project.split(":")[1]
-        data["components"] = "os/x86_64 updates/x86_64 extras/x86_64"
-        data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-$releasever"
-    elif project.startswith("fedora:"):
-        if project.split(":")[1] == "30":
-            data["base_url"] = "http://download.fedoraproject.org/pub/fedora/linux/releases/test/"
-            data["suite"] = "{}_Beta".format(project.split(":")[1])
+    elif project.startswith("centos."):
+        if project.split(".")[1] == "8":
+            data["base_url"] = "http://mirror.centos.org/centos"
+            data["suite"] = suite
+            data["components"] = "BaseOS/x86_64/os"
+            data["options"] = "gpgcheck=1 gpgkey==file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial"
+        elif project.split(".")[1] == "7":
+            data["base_url"] = "http://mirror.centos.org/centos"
+            data["suite"] = suite
+            data["components"] = "os/x86_64 updates/x86_64 extras/x86_64"
+            data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-$releasever"
+        else:
+            data["base_url"] = "http://vault.centos.org"
+            data["suite"] = suite
+            data["components"] = "os/x86_64 updates/x86_64 extras/x86_64"
+            data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-$releasever"
+
+    elif project.startswith("fedora."):
+        if project.split(".")[1] == "34":
+            data["base_url"] = "http://download.fedoraproject.org/pub/fedora/linux/development"
+            data["suite"] = suite
             data["components"] = "Everything/x86_64/os"
             data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch"
         else:
             data["base_url"] = "http://download.fedoraproject.org/pub/fedora/linux/releases"
-            data["suite"] = project.split(":")[1]
+            data["suite"] = suite
             data["components"] = "Everything/x86_64/os"
             data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch"
-    elif project.startswith("opensuse-leap:"):
-        if project.split(":")[1] == "42.3":
+    elif project.startswith("opensuse."):
+        if project.split(".")[1] == "42.3":
             data["base_url"] = "http://download.opensuse.org/distribution/leap"
-            data["suite"] = project.split(":")[1]
+            data["suite"] = suite
             data["components"] = "repo/oss/suse"
             data["options"] = ""
         else:
             data["base_url"] = "http://download.opensuse.org/distribution/leap"
-            data["suite"] = project.split(":")[1]
+            #data["suite"] = "{}.{}".format(project.split(".")[1], project.split(".")[2])
+            data["suite"] = suite
             data["components"] = "repo/oss"
             data["options"] = ""
     else:
@@ -146,7 +158,7 @@ def createDeploymenExternalBase():
         #print "deployment_id", deployment_id
         pass
     else:
-        print """ERROR: creating external deployment:
+        print("""ERROR: creating external deployment:
 *******************************************************
 Status: %s
 Reason: %s
@@ -154,7 +166,7 @@ Content: %s
 *******************************************************""" % (
     deployment_id.status_code,
     deployment_id.reason,
-    "deployment_id._content")
+    "deployment_id._content") )
 
 
 def save_token():
@@ -211,11 +223,11 @@ def checkSync():
     try:
         computer = api.get("computers",{"id":get_cid()})
         if computer["sync_end_date"]:
-            print "OK    Synchronization"
+            print("OK    Synchronization")
         else:
-            print "ERROR Synchronization"
+            print("ERROR Synchronization")
     except:
-        print "ERROR Synchronization"
+        print("ERROR Synchronization")
 
 
 def checkHW():
@@ -224,13 +236,13 @@ def checkHW():
     api = ApiToken(server=server, user=user)
 
     try:
-        hw = api.get("computers/{}/hardware".format(get_cid()),{})
+        hw = api.get("computers/{0}/hardware".format(get_cid()),{})
         if len(hw)>0:
-            print "OK    Hardware"
+            print("OK    Hardware")
         else:
-            print "EMPTY Hardware"
+            print("EMPTY Hardware")
     except:
-        print "ERROR Hardware"
+        print("ERROR Hardware")
 
 def get_cid():
     server=os.environ["MIGASFREE_CLIENT_SERVER"]
@@ -253,6 +265,6 @@ def checkErrors():
         for e in errors:
             i += 1
         if i>0:
-            print "ERROR ({}): http://{}/admin/server/error/?computer__id__exact={}".format(i, server, cid)
+            print("ERROR ({0}): http://{1}/admin/server/error/?computer__id__exact={2}".format(i, server, cid))
     except:
-        print "ERROR ? errors in synchronization"
+        print("ERROR ? errors in synchronization")
