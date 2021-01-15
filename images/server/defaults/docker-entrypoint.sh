@@ -12,7 +12,7 @@ function set_TZ {
 
 function get_migasfree_setting()
 {
-    echo -n $(DJANGO_SETTINGS_MODULE=migasfree.settings.production python -c "from django.conf import settings; print settings.$1")
+    echo -n $(DJANGO_SETTINGS_MODULE=migasfree.settings.production python3 -c "from django.conf import settings; print(settings.$1)")
 }
 
 
@@ -35,7 +35,7 @@ function owner()
 # Nginx configuration
 function create_nginx_config
 {
-    python - << EOF
+    python3 - << EOF
 from django.conf import settings
 _CONFIG_NGINX = """
 
@@ -146,7 +146,7 @@ function nginx_init
 
     create_nginx_config
 
-    run_as_www-data 'export GPG_TTY=$(tty);DJANGO_SETTINGS_MODULE=migasfree.settings.production python -c "import django; django.setup(); from migasfree.server.secure import create_server_keys; create_server_keys()"'
+    run_as_www-data 'export GPG_TTY=$(tty);DJANGO_SETTINGS_MODULE=migasfree.settings.production python3 -c "import django; django.setup(); from migasfree.server.secure import create_server_keys; create_server_keys()"'
 
     /etc/init.d/nginx start
 
@@ -198,13 +198,9 @@ function create_database()
 }
 
 
-function set_circus_numprocesses() {
-    sed -ri "s/^#?(numprocesses\s*=\s*)\S+/\1$(nproc)/" "/etc/circus/circusd.ini"
-}
-
-
 function wait_postgresql {
     while [ -f  /etc/migasfree-server/.init-db ] ; do
+      echo "/etc/migasfree-server/.init-db locked"
       sleep 1
     done
 }
@@ -212,6 +208,7 @@ function wait_postgresql {
 
 function wait_server {
     while [ -f  /etc/migasfree-server/.init-server ] ; do
+      echo "/etc/migasfree-server/.init-server locked"
       sleep 1
     done
     touch /etc/migasfree-server/.init-server
@@ -222,8 +219,6 @@ function wait_server {
 function migasfree_init
 {
 
-    set_nginx_server_permissions
-
     wait_postgresql
 
     wait_server
@@ -232,8 +227,9 @@ function migasfree_init
 
     is_db_exists && echo yes | cat - | django-admin migrate --fake-initial || (
         create_database
+        rm /tmp/migasfree.log || :
         django-admin migrate
-        python - << EOF
+        python3 - << EOF
 import django
 django.setup()
 from migasfree.server.fixtures import create_initial_data, sequence_reset
@@ -242,7 +238,7 @@ sequence_reset()
 EOF
     )
 
-
+    set_nginx_server_permissions
     nginx_init
 
     rm /etc/migasfree-server/.init-server
@@ -250,28 +246,9 @@ EOF
 }
 
 
-function wait_nginx {
-    echo "Waiting ngnix ... "
-    while true
-    do
-        STATUS=$(curl --write-out %{http_code} --silent --output /dev/null $FQDN/accounts/login/) || :
-        if [ $STATUS = 200 ]
-        then
-            break
-        fi
-        sleep 1
-    done
-}
-
-
 set_TZ
 update-ca-certificates
 migasfree_init
-
-echo "Starting circus"
-set_circus_numprocesses
-circusd --daemon /etc/circus/circusd.ini
-circusctl status
 
 echo "One moment..."
 
@@ -282,8 +259,6 @@ else
     _URL=http://$FQDN:$PORT
 fi
 
-wait_nginx
-
 echo "
         Container: $HOSTNAME
         Time zome: $TZ  $(date)
@@ -293,10 +268,13 @@ echo "
                \\           \\
                 \\           \\
                   -----------
-        $_URL is running.
+        $_URL  
 "
 
-while :
-do
-    sleep 5
-done
+gunicorn --user=$_UID --group=$_GID \
+         --log-level=info  --error-logfile=- --access-logfile=- \
+         --timeout=3600 \
+         --worker-tmp-dir=/dev/shm \
+         --workers=$((2* $(nproc) + 1 ))  --worker-connections=1000 \
+         --bind=0.0.0.0:8080 \
+         migasfree.wsgi
