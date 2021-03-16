@@ -246,7 +246,14 @@ EOF
 }
 
 
+function cron_init
+{
+    service cron start
+}
+
+
 set_TZ
+cron_init
 update-ca-certificates
 migasfree_init
 
