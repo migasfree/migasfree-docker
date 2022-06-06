@@ -4,7 +4,7 @@ ENV _SUITE="buster" \
     TERM=xterm \
     DEBIAN_FRONTEND=noninteractive \
     _PYTHON_BIN=/usr/bin/python2 \
-    _CLIENT_DEPENDS='python-stdeb dh-python python-netifaces' \
+    _CLIENT_DEPENDS='python-stdeb dh-python python-netifaces python-distro' \
     _SDK_DEPENDS='python-requests dialog python-six' \
     _PLAY_DEPENDS='devscripts npm wget'  \
     _OTHERS='pciutils'
@@ -15,12 +15,12 @@ RUN apt-get update && \
 RUN apt-get -y dist-upgrade
 
 # WORKAROUND: Update lshw from ubuntu !!!!
-RUN apt-get -y install wget && \
-    wget http://security.ubuntu.com/ubuntu/pool/main/g/gcc-10/gcc-10-base_10.2.0-5ubuntu1~20.04_amd64.deb && \
-    wget http://security.ubuntu.com/ubuntu/pool/main/g/gcc-10/libgcc-s1_10.2.0-5ubuntu1~20.04_amd64.deb && \
-    wget http://mirrors.kernel.org/ubuntu/pool/main/l/lshw/lshw_02.18.85-0.3ubuntu2_amd64.deb && \
-    dpkg -i *.deb && \
-    apt-get -y install -f
+#RUN apt-get -y install wget && \
+#    wget http://security.ubuntu.com/ubuntu/pool/main/g/gcc-10/gcc-10-base_10.2.0-5ubuntu1~20.04_amd64.deb && \
+#    wget http://security.ubuntu.com/ubuntu/pool/main/g/gcc-10/libgcc-s1_10.2.0-5ubuntu1~20.04_amd64.deb && \
+#    wget http://mirrors.kernel.org/ubuntu/pool/main/l/lshw/lshw_02.18.85-0.3ubuntu2_amd64.deb && \
+#    dpkg -i *.deb && \
+#    apt-get -y install -f
 
 
 COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh

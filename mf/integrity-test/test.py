@@ -111,7 +111,7 @@ def createDeploymenExternalBase():
         data["options"] = "[arch=amd64]"
     elif project.startswith("centos."):
         if project.split(".")[1] == "8":
-            data["base_url"] = "http://mirror.centos.org/centos"
+            data["base_url"] = "http://vault.centos.org/centos"
             data["suite"] = suite
             data["components"] = "BaseOS/x86_64/os"
             data["options"] = "gpgcheck=1 gpgkey==file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial"
@@ -125,9 +125,13 @@ def createDeploymenExternalBase():
             data["suite"] = suite
             data["components"] = "os/x86_64 updates/x86_64 extras/x86_64"
             data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-$releasever"
-
+    elif project.startswith("oraclelinux."):
+        data["base_url"] = "https://yum.oracle.com/repo/OracleLinux"
+        data["suite"] = suite
+        data["components"] = "baseos/latest/x86_64"
+        data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle"
     elif project.startswith("fedora."):
-        if project.split(".")[1] == "34":
+        if project.split(".")[1] == "36":
             data["base_url"] = "http://download.fedoraproject.org/pub/fedora/linux/development"
             data["suite"] = suite
             data["components"] = "Everything/x86_64/os"

@@ -117,9 +117,7 @@ cd ../images/server/
 make build
 cd ../../mf
 docker-compose up -d
-wait_nginx
-echo 'DEBUG=True' >> /var/lib/migasfree/$FQDN/conf/settings.py
-docker restart $FQDN-server
+
 wait_nginx
 echo
 echo > $_PATH_PKGS/data.log
@@ -167,8 +165,8 @@ then
     testing "apt"
     testing "yum"
     testing "zypper"
-else 
-    testing "apt" "ubuntu.20"
+else
+    testing "apt" "ubuntu.22"
 fi
 
 # Copiamos scripts

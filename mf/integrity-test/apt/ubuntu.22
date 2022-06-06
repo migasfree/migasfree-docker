@@ -1,17 +1,19 @@
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
-ENV _SUITE="focal" \
+ENV _SUITE="jammy" \
+    USER=root \
     TERM=xterm \
     DEBIAN_FRONTEND=noninteractive \
     _PYTHON_BIN=/usr/bin/python3 \
-    _CLIENT_DEPENDS='dh-python python3-netifaces python3-distro' \
+    _CLIENT_DEPENDS='dh-python python3-netifaces python3-distro python3-pycurl' \
     _SDK_DEPENDS='python3-requests dialog' \
     _PLAY_DEPENDS='devscripts npm wget' \
-    _STDEB3_DEPENDS='git python3-setuptools  python3-stdeb' 
+    _STDEB3_DEPENDS='git python3-setuptools  python3-stdeb' \
+    _OTHERS='pciutils'
 
 
 RUN apt-get update && \
-    apt-get install -y $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS $_STDEB3_DEPENDS 
+    apt-get install -y $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS $_STDEB3_DEPENDS $_OTHERS
 
 # WORKAROUND: stdeb
 RUN apt-get install -y python3-pip && \

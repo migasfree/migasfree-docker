@@ -4,7 +4,7 @@ ENV _SUITE="bullseye" \
     TERM=xterm \
     DEBIAN_FRONTEND=noninteractive \
     _PYTHON_BIN=/usr/bin/python3 \
-    _CLIENT_DEPENDS='dh-python python3-netifaces' \
+    _CLIENT_DEPENDS='dh-python python3-netifaces python3-stdeb python3-distro' \
     _SDK_DEPENDS='python3-requests dialog' \
     _PLAY_DEPENDS='devscripts npm wget'  \
     _STDEB3_DEPENDS='git python3-setuptools' \
@@ -14,19 +14,15 @@ ENV _SUITE="bullseye" \
 RUN apt-get update && \
     apt-get install -y $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS $_STDEB3_DEPENDS $_OTHERS
 
-# Create package python3-stdeb3
-RUN apt install -y dpkg-dev python3-all debhelper apt-file python3-distro && \
-    cd / && \
-    GIT_SSL_NO_VERIFY=1 git clone https://github.com/ashleysommer/stdeb3.git && \
-    cd stdeb3  && \
-    python3 setup.py --command-packages=stdeb3.command bdist_deb &&\
-    dpkg -i deb_dist/*.deb
+# WORKAROUND: stdeb
+RUN apt-get install -y python3-pip && \
+    pip3 install stdeb3 
 
 # WORKAROUND Update lshw from ubuntu !!!!
-RUN apt-get -y install wget && \
-    wget http://mirrors.kernel.org/ubuntu/pool/main/l/lshw/lshw_02.18.85-0.5ubuntu1_amd64.deb && \
-    dpkg -i lshw_02.18.85-*.deb && \
-    apt-get -y install -f
+#RUN apt-get -y install wget && \
+#    wget http://mirrors.kernel.org/ubuntu/pool/main/l/lshw/lshw_02.18.85-0.5ubuntu1_amd64.deb && \
+#    dpkg -i lshw_02.18.85-*.deb && \
+#    apt-get -y install -f
 
 RUN apt-get -y dist-upgrade
 

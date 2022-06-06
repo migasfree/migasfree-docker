@@ -11,6 +11,10 @@ ENV _SUITE="xenial" \
 RUN apt-get update && \
     apt-get install -y $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS
 
+RUN apt-get update && \
+    apt-get install -y python-pip && \
+    pip install distro
+
 COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh
 
 CMD ["/bin/bash", "/docker-entrypoint.sh"]

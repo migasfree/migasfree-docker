@@ -1,6 +1,6 @@
-FROM centos:8
+FROM oraclelinux:8
 
-ENV _SUITE="8" \
+ENV _SUITE="OL8" \
     _USERBUILD="userbuild" \
     _BUILD_DEPENDS='rpm-build.x86_64 gettext.x86_64 which openssl make'  \  
     _PYTHON_BIN='/usr/bin/python3' \
@@ -9,13 +9,11 @@ ENV _SUITE="8" \
     _PLAY_DEPENDS='npm wget' \
     _OTHERS='pciutils.x86_64'
 
-# WORKAROUND
-#https://proyectoa.com/solucion-al-error-failed-to-download-metadata-for-repo-appstream-en-centos-8/
-RUN sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-* && \
-    sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
-
 RUN yum clean all && \
-    yum -y install epel-release && \
+    #yum -y install wget && \ 
+    #wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && \
+    #rpm -ivh epel-release-latest-7.noarch.rpm && \
+    #yum update && \
     yum -y install $_BUILD_DEPENDS $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS $_OTHERS
 
 # WORKAROUND :-(
