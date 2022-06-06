@@ -138,7 +138,7 @@ function set_nginx_server_permissions()
 
 function run_as_www-data
 {
-    su - www-data -s /bin/bash -c "$1"
+    su - www-data -s /bin/bash -c "export PYTHONPATH=${PYTHONPATH};export DJANGO_SETTINGS_MODULE=migasfree.settings.production;. /.venv/bin/activate;$1"
 }
 
 function nginx_init
@@ -146,9 +146,11 @@ function nginx_init
 
     create_nginx_config
 
-    run_as_www-data 'export GPG_TTY=$(tty);DJANGO_SETTINGS_MODULE=migasfree.settings.production python3 -c "import django; django.setup(); from migasfree.server.secure import create_server_keys; create_server_keys()"'
-
-    /etc/init.d/nginx start
+    echo ""
+    nginx -t
+    service nginx start
+    service nginx status
+    echo ""
 
 }
 
@@ -218,6 +220,11 @@ function wait_server {
 
 function migasfree_init
 {
+    set_nginx_server_permissions
+
+    # Server Keys
+    run_as_www-data 'python3 -c "import django; django.setup(); from migasfree.server.secure import create_server_keys; create_server_keys()"'
+
 
     wait_postgresql
 
@@ -225,36 +232,31 @@ function migasfree_init
 
     is_user_exists || create_user
 
-    is_db_exists && echo yes | cat - | django-admin migrate --fake-initial || (
+    is_db_exists && run_as_www-data "echo yes | cat - | django-admin migrate --fake-initial" || (
         create_database
-        rm /tmp/migasfree.log || :
-        django-admin migrate
-        python3 - << EOF
-import django
-django.setup()
-from migasfree.server.fixtures import create_initial_data, sequence_reset
-create_initial_data()
-sequence_reset()
-EOF
+        run_as_www-data "django-admin migrate"
+        
+        run_as_www-data "python3 -c 'import django;django.setup();from migasfree.server.fixtures import create_initial_data;create_initial_data()'"
+    
+        chown  root /tmp/migasfree.log
+        python3 -c 'import django;django.setup();from migasfree.server.fixtures import sequence_reset;sequence_reset()'
+        chown  www-data /tmp/migasfree.log
+
     )
+    
 
-    set_nginx_server_permissions
+    run_as_www-data "django-admin migrate"
+
     nginx_init
-
+    
     rm /etc/migasfree-server/.init-server
 
 }
 
-
-function cron_init
-{
-    service cron start
-}
-
-
+. /.venv/bin/activate
 set_TZ
-cron_init
-update-ca-certificates
+service cron start
+bash -c "update-ca-certificates --fresh"
 migasfree_init
 
 echo "One moment..."
@@ -277,6 +279,9 @@ echo "
                   -----------
         $_URL  
 "
+
+usermod --shell /usr/sbin/nologin  www-data 
+
 
 gunicorn --user=$_UID --group=$_GID \
          --log-level=info  --error-logfile=- --access-logfile=- \
