@@ -150,6 +150,7 @@ function nginx_init
     nginx -t
     service nginx start
     service nginx status
+    chown www-data /var/log/nginx/* >/dev/null
     echo ""
 
 }
