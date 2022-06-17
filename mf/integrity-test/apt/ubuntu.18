@@ -6,10 +6,13 @@ ENV _SUITE="bionic" \
     _PYTHON_BIN=/usr/bin/python2 \
     _CLIENT_DEPENDS='python-stdeb dh-python python-netifaces python-distro' \
     _SDK_DEPENDS='python-requests dialog python-six' \
-    _PLAY_DEPENDS='devscripts npm wget' 
+    _PLAY_DEPENDS='devscripts curl wget' 
 
 RUN apt-get update && \
-    apt-get install -y $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS
+    apt-get install -y $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS && \
+    # WORKAROUND: https://linuxize.com/post/how-to-install-node-js-on-ubuntu-18.04/ && \
+    curl -sL https://deb.nodesource.com/setup_12.x |  bash - && \
+    apt install -y nodejs
 
 COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh
 
