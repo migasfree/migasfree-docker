@@ -10,10 +10,6 @@ ENV _SUITE="OL8" \
     _OTHERS='pciutils.x86_64'
 
 RUN yum clean all && \
-    #yum -y install wget && \ 
-    #wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && \
-    #rpm -ivh epel-release-latest-7.noarch.rpm && \
-    #yum update && \
     yum -y install $_BUILD_DEPENDS $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS $_OTHERS
 
 # WORKAROUND :-(
