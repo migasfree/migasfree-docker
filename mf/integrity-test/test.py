@@ -131,7 +131,7 @@ def createDeploymenExternalBase():
         data["components"] = "baseos/latest/x86_64"
         data["options"] = "gpgcheck=1 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle"
     elif project.startswith("fedora."):
-        if project.split(".")[1] == "36":
+        if project.split(".")[1] == "37":
             data["base_url"] = "http://download.fedoraproject.org/pub/fedora/linux/development"
             data["suite"] = suite
             data["components"] = "Everything/x86_64/os"
