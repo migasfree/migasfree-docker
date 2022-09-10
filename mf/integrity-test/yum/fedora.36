@@ -1,0 +1,22 @@
+FROM fedora:36
+
+ENV _SUITE="36" \
+    _BUILD_DEPENDS='rpm-build gettext which openssl python3-distro make' \
+    _USERBUILD="userbuild" \
+    _PYTHON_BIN='/usr/bin/python3' \
+    _CLIENT_DEPENDS='python3 python3-netifaces python3-pycurl' \
+    _SDK_DEPENDS='python3-requests dialog python3-distro' \
+    _PLAY_DEPENDS='npm wget' \
+    _OTHERS='pciutils' 
+
+RUN yum clean all && \
+    yum -y install util-linux && \
+    yum -y install $_BUILD_DEPENDS $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS $_OTHERS
+
+RUN useradd -m $_USERBUILD
+
+RUN sudo su -c "mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}"  $_USERBUILD
+
+COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh
+
+CMD ["/bin/bash", "/docker-entrypoint.sh"]
