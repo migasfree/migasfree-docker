@@ -6,7 +6,7 @@ ENV _SUITE="focal" \
     _PYTHON_BIN=/usr/bin/python3 \
     _CLIENT_DEPENDS='dh-python python3-netifaces python3-distro' \
     _SDK_DEPENDS='python3-requests dialog' \
-    _PLAY_DEPENDS='devscripts npm wget' \
+    _PLAY_DEPENDS='devscripts wget curl' \
     _STDEB3_DEPENDS='git python3-setuptools  python3-stdeb' 
 
 
@@ -16,6 +16,11 @@ RUN apt-get update && \
 # WORKAROUND: stdeb
 RUN apt-get install -y python3-pip && \
     pip3 install stdeb3 
+
+# INSTALL  nodejs
+RUN  curl -sL https://deb.nodesource.com/setup_18.x |  bash - && \
+    apt install -y nodejs && \
+    npm i npm@latest -g
 
 COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh
 
