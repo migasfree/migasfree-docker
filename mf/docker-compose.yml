@@ -1,39 +1,43 @@
-server:
-  image: migasfree/server:${MIGASFREE_VERSION}
-  container_name: ${FQDN}-server
-  environment:
-    - FQDN=${FQDN}
-    - TZ=${TZ}
-    - POSTGRES_PORT=${POSTGRES_PORT}
-    - http_proxy=${http_proxy}
-    - https_proxy=${https_proxy}
-  restart: always
-  links:
-  - db
-  ports:
-    - "${MIGASFREE_PORT}:80"
-  volumes:
-    - "/var/lib/migasfree/${FQDN}/conf:/etc/migasfree-server"
-    - "/var/lib/migasfree/${FQDN}/public:/var/migasfree/repo"
-    - "/var/lib/migasfree/${FQDN}/keys:/usr/share/migasfree-server"
-#    - "/usr/share/ca-certificates/192.168.1.201.crt:/usr/share/ca-certificates/192.168.1.201.crt"
+version: "3"
 
-db:
-  image: migasfree/db:${MIGASFREE_VERSION_DB}
-  container_name: ${FQDN}-db
-  environment:
-    - POSTGRES_CRON=${POSTGRES_CRON}
-    - POSTGRES_HOST=${FQDN}
-    - POSTGRES_PORT=${POSTGRES_PORT}
-    - POSTGRES_DB=${POSTGRES_DB}
-    - POSTGRES_USER=${POSTGRES_USER}
-    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    - POSTGRES_ALLOW_HOSTS=${POSTGRES_ALLOW_HOSTS}
-    - TZ=${TZ}
-  restart: always
-  ports:
-    - "${POSTGRES_PORT}:5432"
-  volumes:
-    - "/var/lib/migasfree/${FQDN}/conf:/etc/migasfree-server"
-    - "/var/lib/migasfree/${FQDN}/data:/var/lib/postgresql/data"
-    - "/var/lib/migasfree/${FQDN}/dump:/var/migasfree/dump"
+services:
+
+  server:
+    image: migasfree/server:${MIGASFREE_VERSION}
+    container_name: ${FQDN}-server
+    environment:
+      - FQDN=${FQDN}
+      - TZ=${TZ}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - http_proxy=${http_proxy}
+      - https_proxy=${https_proxy}
+    restart: always
+    links:
+      - db
+    ports:
+      - "${MIGASFREE_PORT}:80"
+    volumes:
+      - "/var/lib/migasfree/${FQDN}/conf:/etc/migasfree-server"
+      - "/var/lib/migasfree/${FQDN}/public:/var/migasfree/repo"
+      - "/var/lib/migasfree/${FQDN}/keys:/usr/share/migasfree-server"
+#      - "/usr/share/ca-certificates/192.168.1.201.crt:/usr/share/ca-certificates/192.168.1.201.crt"
+
+  db:
+    image: migasfree/db:${MIGASFREE_VERSION_DB}
+    container_name: ${FQDN}-db
+    environment:
+      - POSTGRES_CRON=${POSTGRES_CRON}
+      - POSTGRES_HOST=${FQDN}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_ALLOW_HOSTS=${POSTGRES_ALLOW_HOSTS}
+      - TZ=${TZ}
+    restart: always
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - "/var/lib/migasfree/${FQDN}/conf:/etc/migasfree-server"
+      - "/var/lib/migasfree/${FQDN}/data:/var/lib/postgresql/data"
+      - "/var/lib/migasfree/${FQDN}/dump:/var/migasfree/dump"
