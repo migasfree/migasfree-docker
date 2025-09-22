@@ -36,10 +36,8 @@ RUN _TAG=$(cat /VERSION) && \
     wget https://github.com/migasfree/migasfree/archive/$_TAG.zip && \
     unzip $_TAG.zip && \
     cd migasfree-$_TAG && \
-    sed -i 's/django-admin-bootstrapped==2.5.7/# django-admin-bootstrapped==2.5.7/g' requirements/base.txt  && \
-    pip install -r requirements/production.txt &&\
+    pip install --no-deps -r requirements/production.txt &&\
     python3 setup.py install && \
-    pip install --no-deps django-admin-bootstrapped==2.5.7 && \ 
     rm -rf /$_TAG.zip && \
     rm -rf /migasfree-$_TAG && \
     rm -rf /root/.cache && \
