@@ -1,83 +1,81 @@
-
 # Migasfree Docker
 
-Provides an isolated migasfree server to run in **one host**.
+Provides an isolated migasfree server that runs on a **single host**.
 
 
 ## Requirements
 
-* ***A FQDN for your server***: If you don't have a FQDN you can add a register in /etc/hosts in order to emulate it in a test environment, or you can use the IP server too.
+- ***A fully-qualified domain name (FQDN) for your server***: If you don't have a FQDN you can add an entry to `/etc/hosts` to emulate one in a test environment, or you can use the server's IP address.
 
-* ***docker engine installed***: https://docs.docker.com/engine/installation/
+- ***Docker Engine***: [see the official installation guide](https://docs.docker.com/engine/installation/)
 
-* ***docker-compose installed***: https://docs.docker.com/compose/install/
+- ***Docker Compose***: [installation instructions](https://docs.docker.com/compose/install/)
 
-* ***haveged installed***: Migasfree server needs a certain entropy in the host to generate gpg keys. If your host is based in Debian run:
+- ***haveged***: Migasfree server needs sufficient entropy to generate GPG keys. On Debian-based hosts, install it with:
 
 ```sh
-       apt-get install haveged
+apt-get install haveged
 ```
 
 
-## Install 
+## Installation
 
-* ***Download docker-compose.yml and variables file***:
+1. **Download `docker-compose.yml` and `variables` files**:
+
+   ```sh
+   mkdir mf
+   cd mf
+   wget https://github.com/migasfree/migasfree-docker/raw/master/mf/docker-compose.yml
+   wget https://github.com/migasfree/migasfree-docker/raw/master/mf/variables
+   ```
+
+2. **Configure the variables**:
+
+   ```sh
+   vi variables
+   ```
+
+
+## Running the Stack
 
 ```sh
-        mkdir mf
-        cd mf
-        wget https://github.com/migasfree/migasfree-docker/raw/master/mf/docker-compose.yml
-        wget https://github.com/migasfree/migasfree-docker/raw/master/mf/variables
-```
-
-* ***Configure***:
-
-```sh
-        vi variables
-```
-
-
-## Run
-
-```sh
-        . variables
-        docker-compose up -d
+. variables
+docker-compose up -d
 ```
 
 
 ## Test it!
 
-Open any browser and enter the website, e.g.:
+Open a web browser and navigate to the server, e.g.:
 
 ```sh
 xdg-open http://<FQDN>
 ```
 
 
-## Settings
+## Custom Settings
 
-Edit the file **/var/lib/migasfree/FQDN/conf/settings.py** to customize the migasfree-server (http://fun-with-migasfree.readthedocs.org/en/master/part05.html#ajustes-del-servidor-migasfree).
+Edit `/var/lib/migasfree/FQDN/conf/settings.py` to adjust the [Migasfree server configuration](http://fun-with-migasfree.readthedocs.org/en/master/part05.html#ajustes-del-servidor-migasfree).
 
 
-## Backup the Database
+## Database Backup
 
-Migasfree server makes a dump of the database at POSTGRES_CRON config variable, but running this command will force the dump of the database in **/var/lib/migasfree/FQDN/dump/migasfree.sql** :
+Migasfree server automatically dumps the database according to the `POSTGRES_CRON` configuration variable. To force an immediate dump to `/var/lib/migasfree/<FQDN>/dump/migasfree.sql`, run:
 
 ```sh
 docker exec -ti migasfree.mydomain.com-db backup
 ```
 
 
-## Restore the DataBase
+## DataBase Restore
 
-Copy a dump file in **/var/lib/migasfree/FQDN/dump/migasfree.sql** and run:
+Place a dump file at `/var/lib/migasfree/<FQDN>/dump/migasfree.sql` and execute:
 
 ```sh
 docker exec -ti migasfree.mydomain.com-db restore
 ```
 
 
-## Data persistence
+## Data Persistence
 
-In **/var/lib/migasfree/** you will have all data. Make yourself a regular backup of this directory.
-
+All persistent data is store under `/var/lib/migasfree/`. Make regular backups of this directory to protect your data.
