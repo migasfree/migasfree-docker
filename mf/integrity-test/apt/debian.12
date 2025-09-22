@@ -1,0 +1,33 @@
+FROM debian:bookworm
+
+ENV _SUITE="bookworm" \
+    TERM=xterm \
+    DEBIAN_FRONTEND=noninteractive \
+    _PYTHON_BIN=/usr/bin/python3 \
+    _CLIENT_DEPENDS='dh-python python3-netifaces python3-stdeb python3-distro' \
+    _SDK_DEPENDS='python3-requests dialog' \
+    _PLAY_DEPENDS='devscripts npm wget' \
+    _STDEB3_DEPENDS='git python3-setuptools' \
+    _OTHERS='pciutils'
+
+# Instalación de dependencias principales
+RUN apt-get update && \
+    apt-get install -y $_CLIENT_DEPENDS $_SDK_DEPENDS $_PLAY_DEPENDS $_STDEB3_DEPENDS $_OTHERS && \
+    rm -rf /var/lib/apt/lists/*
+
+# WORKAROUND: stdeb (se instala vía pip)
+RUN apt-get update && \
+    apt-get install -y python3-pip && \
+    pip3 install --no-cache-dir stdeb3 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Opcional: actualizar todo el sistema (dist-upgrade)
+RUN apt-get update && \
+    apt-get dist-upgrade -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copia del script de entrypoint
+COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+CMD ["/bin/bash", "/docker-entrypoint.sh"]
