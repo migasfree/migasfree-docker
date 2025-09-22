@@ -1,5 +1,5 @@
 FROM debian:bullseye-slim
-MAINTAINER Alberto Gacías <alberto@migasfree.org>
+LABEL maintainer="Alberto Gacías <alberto@migasfree.org>"
 
 COPY VERSION /VERSION
 
@@ -13,7 +13,7 @@ ENV TERM=xterm \
     _GID=890 \
     _BUILD_DEPENDS='git python3-dev libgpgme11-dev python3-all python3-all-dev debhelper unzip g++ gcc-10 libcairo2-dev libjpeg62-turbo-dev libxml2-dev libxslt1-dev libpq-dev' \
     _DEPENDS='libzmq5 dpkg-dev gnupg rng-tools curl rpm createrepo-c apt-utils bzip2 xz-utils libgpgme11 postgresql-client nginx python3 python3-minimal python3-pip python3-venv p7zip-full vim wget netcat-openbsd logrotate gzip' \
-    _PIP_DEPENDS='gunicorn==20.0.4'
+    _PIP_DEPENDS='gunicorn==20.0.4 pytz==2024.1 jdcal==1.4.1 defusedxml==0.7.1 diff_match_patch==20241021'
 
 RUN _TAG=$(cat /VERSION) && \
     apt-get update && \
@@ -55,8 +55,8 @@ RUN _TAG=$(cat /VERSION) && \
     rm -rf /root/.cache
 
 COPY defaults/etc/logrotate.d/nginx /etc/logrotate.d/nginx
-
 COPY defaults/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 ENTRYPOINT ["/bin/bash", "/docker-entrypoint.sh"]
 
