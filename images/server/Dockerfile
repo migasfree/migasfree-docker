@@ -13,7 +13,7 @@ ENV TERM=xterm \
     _GID=890 \
     _BUILD_DEPENDS='git python3-dev libgpgme11-dev python3-all python3-all-dev debhelper unzip g++ gcc-10 libcairo2-dev libjpeg62-turbo-dev libxml2-dev libxslt1-dev libpq-dev' \
     _DEPENDS='libzmq5 dpkg-dev gnupg rng-tools curl rpm createrepo-c apt-utils bzip2 xz-utils libgpgme11 postgresql-client nginx python3 python3-minimal python3-pip python3-venv p7zip-full vim wget netcat-openbsd logrotate gzip' \
-    _PIP_DEPENDS='gunicorn==20.0.4 pytz==2024.1 jdcal==1.4.1 defusedxml==0.7.1 diff_match_patch==20241021'
+    _PIP_DEPENDS='gunicorn==20.0.4'
 
 RUN _TAG=$(cat /VERSION) && \
     apt-get update && \
@@ -36,8 +36,11 @@ RUN _TAG=$(cat /VERSION) && \
     wget https://github.com/migasfree/migasfree/archive/$_TAG.zip && \
     unzip $_TAG.zip && \
     cd migasfree-$_TAG && \
-    pip install --no-deps -r requirements/production.txt &&\
+    sed -i 's/django-admin-bootstrapped==2.5.7/# django-admin-bootstrapped==2.5.7/g' requirements/base.txt && \
+    sed -i 's/django-filter==2.4.0/# django-filter==2.4.0/g' requirements/base.txt && \
+    pip install -r requirements/production.txt && \
     python3 setup.py install && \
+    pip install --no-deps django-admin-bootstrapped==2.5.7 django-filter==2.4.0 && \
     rm -rf /$_TAG.zip && \
     rm -rf /migasfree-$_TAG && \
     rm -rf /root/.cache && \
