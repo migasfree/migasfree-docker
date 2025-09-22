@@ -55,7 +55,7 @@ xdg-open http://<FQDN>
 
 ## Custom Settings
 
-Edit `/var/lib/migasfree/FQDN/conf/settings.py` to adjust the [Migasfree server configuration](http://fun-with-migasfree.readthedocs.org/en/master/part05.html#ajustes-del-servidor-migasfree).
+Edit `/var/lib/migasfree/<FQDN>/conf/settings.py` to adjust the [Migasfree server configuration](http://fun-with-migasfree.readthedocs.org/en/master/part05.html#ajustes-del-servidor-migasfree).
 
 
 ## Database Backup
